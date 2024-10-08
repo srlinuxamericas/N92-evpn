@@ -72,6 +72,57 @@ To login to the client, identify the client hostname using the `clab inspect` co
 sudo docker exec –it clab-srl-evpn-client3 sh
 ```
 
+## Physical link connectivity
+
+When the lab is deployed with the default startup config, all the links are created with IPv4 and IPv6 addresses.
+
+This allows to start configuring the protocols right away!
+
+Check the startup config files to see how interfaces and IP addresses are configured in SR Linux.
+
+### IPv4 Link Addressing
+
+![image](lab-ipv4.jpg)
+
+### IPv6 Link Addressing
+
+![image](lab-ipv4.jpg)
+
+### Verify reachability between devices
+
+After the lab is deployed, check reachability between leaf and spine devices using ping.
+
+Example from spine to Leaf1 for IPv4:
+
+```
+ping -c 3 192.168.10.2 network-instance default
+Using network instance default
+PING 192.168.10.2 (192.168.10.2) 56(84) bytes of data.
+64 bytes from 192.168.10.2: icmp_seq=1 ttl=64 time=3.86 ms
+64 bytes from 192.168.10.2: icmp_seq=2 ttl=64 time=3.87 ms
+64 bytes from 192.168.10.2: icmp_seq=3 ttl=64 time=3.86 ms
+
+--- 192.168.10.2 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+rtt min/avg/max/mdev = 3.858/3.863/3.867/0.003 ms
+```
+
+Example from spine to Leaf1 for IPv6:
+
+```
+ping6 -c 3 192:168:10::2 network-instance default
+Using network instance default
+PING 192:168:10::2(192:168:10::2) 56 data bytes
+64 bytes from 192:168:10::2: icmp_seq=1 ttl=64 time=4.12 ms
+64 bytes from 192:168:10::2: icmp_seq=2 ttl=64 time=3.00 ms
+64 bytes from 192:168:10::2: icmp_seq=3 ttl=64 time=3.11 ms
+
+--- 192:168:10::2 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 3.004/3.410/4.118/0.502 ms
+```
+
+
 ## Useful links
 
 * [Network Developer Portal](https://network.developer.nokia.com/)
