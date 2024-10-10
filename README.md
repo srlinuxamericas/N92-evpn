@@ -59,7 +59,9 @@ sudo clab inspect --all
 ## Connecting to the devices
 
 Find the nodename or IP address of the device and then use SSH.
+
 Username: `admin`
+
 Password: Refer to the card
 
 ```
