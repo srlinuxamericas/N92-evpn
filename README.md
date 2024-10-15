@@ -22,7 +22,7 @@ The objective of the handson section of this workshop is the following:
 - Build Layer 3 EVPN
 
 ## Lab Topology
-![image](lab-topology.jpg)
+![image](images/lab-topology.jpg)
 
 ## NOS (Network Operating System)
 
@@ -84,11 +84,11 @@ Check the startup config files to see how interfaces and IP addresses are config
 
 ### IPv4 Link Addressing
 
-![image](lab-ipv4.jpg)
+![image](images/lab-ipv4.jpg)
 
 ### IPv6 Link Addressing
 
-![image](lab-ipv4.jpg)
+![image](images/lab-ipv4.jpg)
 
 ### Verify reachability between devices
 
