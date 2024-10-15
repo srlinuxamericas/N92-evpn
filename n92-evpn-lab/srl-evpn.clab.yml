@@ -1,11 +1,7 @@
-# Copyright 2024 Nokia
-# Licensed under the BSD 3-Clause License.
-# SPDX-License-Identifier: BSD-3-Clause
-
 name: srl-evpn
 
 mgmt:
-  network: srl-gen-lab-mgmt
+  network: srl-evpn-lab-mgmt
   ipv4-subnet: 172.20.20.0/24
   ipv6-subnet: 2001:172:20:20::/64
 
