@@ -7,7 +7,7 @@ If you need help, please raise your hand and a Nokia team member will be happy t
 
 ## Lab Environment
 
-A Nokia team member will provide you with a card that contains:
+A Nokia team member will provide you with a sheet that contains:
 - your group and VM ID
 - SSH credentials to the VM instance
 - URL of this repo
@@ -30,22 +30,23 @@ Both leafs and Spine nodes will be running Nokia [SRLinux](https://www.nokia.com
 
 ## Deploying the lab
 
-After logging into the VM (using the credentials on your card), use the below command to clone this repo to your VM.
+After logging into the VM (using the credentials on your sheet), use the below command to clone this repo to your VM.
 
 ```
-git clone 
+git clone https://github.com/srlinuxamericas/N92-evpn.git
 ```
 
 Verify that this git repo files are now available on your VM.
 
 ```
-ls -lrt
+ls -lrt n92-evpn-lab
 ```
 
 To deploy the lab, run the following:
 
 ```
-sudo clab deploy -t 
+cd n92-evpn-lab
+sudo clab deploy -t srl-evpn.clab.yml
 ```
 
 [Containerlab](https://containerlab.dev/) will deploy the lab and display a table with the list of nodes and their IPs.
@@ -62,7 +63,7 @@ Find the nodename or IP address of the device and then use SSH.
 
 Username: `admin`
 
-Password: Refer to the card
+Password: Refer to the provided sheet
 
 ```
 ssh admin@clab-srl-evpn-leaf1
