@@ -39,14 +39,14 @@ git clone https://github.com/srlinuxamericas/N92-evpn.git
 Verify that this git repo files are now available on your VM.
 
 ```
-ls -lrt n92-evpn-lab
+ls -lrt N92-evpn/n92-evpn-lab/
 ```
 
 To deploy the lab, run the following:
 
 ```
-cd n92-evpn-lab
-sudo clab deploy -t srl-evpn.clab.yml
+cd N92-evpn
+sudo clab deploy -t n92-evpn-lab/srl-evpn.clab.yml
 ```
 
 [Containerlab](https://containerlab.dev/) will deploy the lab and display a table with the list of nodes and their IPs.
