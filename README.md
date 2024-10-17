@@ -335,6 +335,19 @@ To login to Client1, use:
 docker exec -it clab-srl-evpn-client1 sh
 ```
 
+Output on Client1:
+
+```
+/ # ip a
+<--truncated-->
+20: eth1@if19: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
+    link/ether aa:c1:ab:81:49:35 brd ff:ff:ff:ff:ff:ff
+    inet 172.16.10.50/24 scope global eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a8c1:abff:fe81:4935/64 scope link
+       valid_lft forever preferred_lft forever
+```
+
 ### Configuring VXLAN
 
 Configuring VXLAN on Leaf1:
@@ -437,7 +450,7 @@ Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
 # docker exec -it clab-srl-evpn-client3 sh
 / # ip a
 26: eth1@if25: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
-    link/ether aa:c1:ab:3f:ae:d8 brd ff:ff:ff:ff:ff:ff
+    link/ether aa:c1:ab:67:32:61 brd ff:ff:ff:ff:ff:ff
     inet 172.16.10.60/24 scope global eth1
        valid_lft forever preferred_lft forever
     inet6 fe80::a8c1:abff:fe3f:aed8/64 scope link
@@ -445,7 +458,7 @@ Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
 / #
 ```
 
-The MAC address of Client3 eth1 interface is aa:c1:ab:3f:ae:d8.
+The MAC address of Client3 eth1 interface is aa:c1:ab:67:32:61.
 
 Ping Client1 IP from Client3:
 
@@ -464,6 +477,79 @@ round-trip min/avg/max = 0.886/0.886/0.886 ms
 ```
 
 Ping is successful. We have now established a Layer2 EVPN connection between Client1 & Client3.
+
+Now let's verify the MAC-IP advertisement using EVPN Route Type 2.
+
+Run the below command on Leaf1 to see this route advertisement. Verify if the MAC address in the table below is the same MAC address we noted above for Client3.
+
+```
+show network-instance default protocols bgp routes evpn route-type summary
+```
+
+Output from Leaf1:
+
+```
+A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Show report for the BGP route table of network-instance "default"
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Status codes: u=used, *=valid, >=best, x=stale
+Origin codes: i=IGP, e=EGP, ?=incomplete
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+BGP Router ID: 1.1.1.1      AS: 64501      Local AS: 64501
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Type 2 MAC-IP Advertisement Routes
++--------+------------------+------------+-------------------+------------------+------------------+------------------+------------------+--------------------------------+------------------+
+| Status |      Route-      |   Tag-ID   |    MAC-address    |    IP-address    |     neighbor     |     Next-Hop     |      Label       |              ESI               |   MAC Mobility   |
+|        |  distinguisher   |            |                   |                  |                  |                  |                  |                                |                  |
++========+==================+============+===================+==================+==================+==================+==================+================================+==================+
+| u*>    | 2.2.2.2:100      | 0          | AA:C1:AB:67:32:61 | 0.0.0.0          | 2.2.2.2          | 2.2.2.2          | 100              | 00:00:00:00:00:00:00:00:00:00  | -                |
+| *      | 2.2.2.2:100      | 0          | AA:C1:AB:67:32:61 | 0.0.0.0          | 2001::2          | 2.2.2.2          | 100              | 00:00:00:00:00:00:00:00:00:00  | -                |
++--------+------------------+------------+-------------------+------------------+------------------+------------------+------------------+--------------------------------+------------------+
+```
+
+Verify the MAC Address table using the below command.
+
+```
+show network-instance mac-vrf-1 bridge-table mac-table all
+```
+
+Output on Leaf1:
+
+```
+A:leaf1# show network-instance mac-vrf-1 bridge-table mac-table all
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Mac-table of network instance mac-vrf-1
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
++--------------------+------------------------------------------------------+------------+----------------+---------+--------+------------------------------------------------------+
+|      Address       |                     Destination                      | Dest Index |      Type      | Active  | Aging  |                     Last Update                      |
++====================+======================================================+============+================+=========+========+======================================================+
+| AA:C1:AB:67:32:61  | vxlan-interface:vxlan13.100 vtep:2.2.2.2 vni:100     | 2736993    | evpn           | true    | N/A    | 2024-10-17T04:46:04.000Z                             |
+| AA:C1:AB:81:49:35  | ethernet-1/10.0                                      | 2          | learnt         | true    | 76     | 2024-10-17T04:46:00.000Z                             |
++--------------------+------------------------------------------------------+------------+----------------+---------+--------+------------------------------------------------------+
+```
+
+### Debug and Packet Capture in SR Linux
+
+SR Linux provides tools in CLI to capture packets for debug purposes.
+
+Run the below command on Spine while a ping test is in progress between Client1 and Client3.
+
+The output shows VXLAN encapsulated ICMP packets being sent between the 2 clients.
+
+```
+tools system traffic-monitor verbose protocol udp destination-port 4789
+```
+
+In this command, port 4789 is standard port for VXLAN.
+
+### Packet Capture in Containerlab
+
+Containerlab provides the ability to do a packet capture and re-direct the captured packets to Wireshark.
+
+Visit [Containerlab page](https://containerlab.dev/manual/wireshark/) to learn more.
+
+
 
 ## 
 
