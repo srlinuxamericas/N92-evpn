@@ -16,7 +16,7 @@ A Nokia team member will provide you with a sheet that contains:
 > The VM instances might be destroyed once the Workshop is concluded.</p>
 
 # Workshop
-The objective of the handson section of this workshop is the following:
+The objective of the hands on section of this workshop is the following:
 - Build a DC fabric with leaf and spine
 - Build Layer 2 EVPN
 - Build Layer 3 EVPN
@@ -328,7 +328,7 @@ set / interface ethernet-1/10 description To-Client3
 set / interface ethernet-1/10 subinterface 0 type bridged
 ```
 
-IP addresses on the client side are pre-configured during deployment. This can be verified by logging to the Client shell and running `ip a`.
+IP addresses on the client side are pre-configured during deployment. This can be verified by logging in to the Client shell and running `ip a`.
 
 To login to Client1, use:
 ```
@@ -581,7 +581,7 @@ set / interface ethernet-1/11 subinterface 0 ipv6 admin-state enable
 set / interface ethernet-1/11 subinterface 0 ipv6 address 10:90:1::2/64
 ```
 
-IP addresses on the client side are pre-configured during deployment. This can be verified by logging to the Client shell and running `ip a`.
+IP addresses on the client side are pre-configured during deployment. This can be verified by logging in to the Client shell and running `ip a`.
 
 ### Configuring VXLAN
 
