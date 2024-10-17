@@ -304,7 +304,7 @@ Summary:
 0 dynamic peers
 ```
 
-## Configur L2 EVPN-VXLAN
+## Configure L2 EVPN-VXLAN
 
 Now that we have established our underlay and overlay connectivity, our next step is to configure the Layer 2 EVPN-VXLAN instance.
 
@@ -364,7 +364,7 @@ set / tunnel-interface vxlan13 vxlan-interface 100 type bridged
 set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
 ```
 
-### Configuring EVPN-VXLAN
+### Configuring Layer 2 EVPN-VXLAN
 
 Layer 2 instance on SR Linux is called MAC-VRF.
 
@@ -486,7 +486,7 @@ Run the below command on Leaf1 to see this route advertisement. Verify if the MA
 show network-instance default protocols bgp routes evpn route-type summary
 ```
 
-Output from Leaf1:
+Output on Leaf1:
 
 ```
 A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
@@ -549,9 +549,228 @@ Containerlab provides the ability to do a packet capture and re-direct the captu
 
 Visit [Containerlab page](https://containerlab.dev/manual/wireshark/) to learn more.
 
+## Configure Layer 3 EVPN-VXLAN
 
+Our final step is to configure a Layer 3 EVPN-VXLAN.
 
-## 
+The objective is to connect Client 2 and Client 4 over a Layer 3 EVPN.
+
+![image](images/l3-evpn.jpg)
+
+### Configure Client Interface
+
+Client Layer 3 interface configuration on Leaf1:
+
+```
+set / interface ethernet-1/11 description To-Client2
+set / interface ethernet-1/11 admin-state enable
+set / interface ethernet-1/11 subinterface 0 ipv4 admin-state enable
+set / interface ethernet-1/11 subinterface 0 ipv4 address 10.80.1.2/24
+set / interface ethernet-1/11 subinterface 0 ipv6 admin-state enable
+set / interface ethernet-1/11 subinterface 0 ipv6 address 10:80:1::2/64
+```
+
+Client Layer 3 interface configuration on Leaf2:
+
+```
+set / interface ethernet-1/11 description To-Client4
+set / interface ethernet-1/11 admin-state enable
+set / interface ethernet-1/11 subinterface 0 ipv4 admin-state enable
+set / interface ethernet-1/11 subinterface 0 ipv4 address 10.90.1.2/24
+set / interface ethernet-1/11 subinterface 0 ipv6 admin-state enable
+set / interface ethernet-1/11 subinterface 0 ipv6 address 10:90:1::2/64
+```
+
+IP addresses on the client side are pre-configured during deployment. This can be verified by logging to the Client shell and running `ip a`.
+
+### Configuring VXLAN
+
+Configuring VXLAN on Leaf1:
+
+```
+set / tunnel-interface vxlan24 vxlan-interface 200 type routed
+set / tunnel-interface vxlan24 vxlan-interface 200 ingress vni 200
+```
+
+Configuring VXLAN on Leaf2:
+
+```
+set / tunnel-interface vxlan24 vxlan-interface 200 type routed
+set / tunnel-interface vxlan24 vxlan-interface 200 ingress vni 200
+```
+
+### Configuring Layer 3 EVPN-VXLAN
+
+Layer 3 instance on SR Linux is called IP-VRF.
+
+EVPN-VXLAN configuration on Leaf1:
+
+```
+set / network-instance ip-vrf-1 type ip-vrf
+set / network-instance ip-vrf-1 admin-state enable
+set / network-instance ip-vrf-1 interface ethernet-1/11.0
+set / network-instance ip-vrf-1 vxlan-interface vxlan24.200
+set / network-instance ip-vrf-1 protocols bgp-evpn bgp-instance 1 encapsulation-type vxlan
+set / network-instance ip-vrf-1 protocols bgp-evpn bgp-instance 1 vxlan-interface vxlan24.200
+set / network-instance ip-vrf-1 protocols bgp-evpn bgp-instance 1 evi 200
+set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-distinguisher rd 1.1.1.1:200
+set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-target export-rt target:65500:200
+set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-target import-rt target:65500:200
+```
+
+EVPN-VXLAN configuration on Leaf2:
+
+```
+set / network-instance ip-vrf-1 type ip-vrf
+set / network-instance ip-vrf-1 admin-state enable
+set / network-instance ip-vrf-1 interface ethernet-1/11.0
+set / network-instance ip-vrf-1 vxlan-interface vxlan24.200
+set / network-instance ip-vrf-1 protocols bgp-evpn bgp-instance 1 encapsulation-type vxlan
+set / network-instance ip-vrf-1 protocols bgp-evpn bgp-instance 1 vxlan-interface vxlan24.200
+set / network-instance ip-vrf-1 protocols bgp-evpn bgp-instance 1 evi 200
+set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-distinguisher rd 2.2.2.2:200
+set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-target export-rt target:65500:200
+set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-target import-rt target:65500:200
+```
+
+### Layer 3 EVPN Route Verification
+
+In Layer 3 EVPN, Route Type 5 is used to advertise IP prefixes.
+
+This can verified using the below command.
+
+```
+show network-instance default protocols bgp routes evpn route-type summary
+```
+
+Output on Leaf1:
+
+```
+A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Show report for the BGP route table of network-instance "default"
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Status codes: u=used, *=valid, >=best, x=stale
+Origin codes: i=IGP, e=EGP, ?=incomplete
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Type 5 IP Prefix Routes
++--------+----------------------------+------------+---------------------+----------------------------+----------------------------+----------------------------+----------------------------+
+| Status |    Route-distinguisher     |   Tag-ID   |     IP-address      |          neighbor          |          Next-Hop          |           Label            |          Gateway           |
++========+============================+============+=====================+============================+============================+============================+============================+
+| u*>    | 2.2.2.2:200                | 0          | 10.90.1.0/24        | 2.2.2.2                    | 2.2.2.2                    | 200                        | 0.0.0.0                    |
+| *      | 2.2.2.2:200                | 0          | 10.90.1.0/24        | 2001::2                    | 2.2.2.2                    | 200                        | 0.0.0.0                    |
+| u*>    | 2.2.2.2:200                | 0          | 10:90:1::/64        | 2.2.2.2                    | 2.2.2.2                    | 200                        | ::                         |
+| *      | 2.2.2.2:200                | 0          | 10:90:1::/64        | 2001::2                    | 2.2.2.2                    | 200                        | ::                         |
++--------+----------------------------+------------+---------------------+----------------------------+----------------------------+----------------------------+----------------------------+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```
+
+Verify the VRF route table on Leaf1 using the below command:
+
+```
+show network-instance ip-vrf-1 route-table ipv4-unicast summary
+```
+
+Output on Leaf1:
+
+```
+A:leaf1# show network-instance ip-vrf-1 route-table ipv4-unicast summary
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IPv4 unicast route table of network instance ip-vrf-1
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
++--------------------------+-------+------------+----------------------+----------+----------+---------+------------+----------------+----------------+----------------+---------------------+
+|          Prefix          |  ID   | Route Type |     Route Owner      |  Active  |  Origin  | Metric  |    Pref    |    Next-hop    |    Next-hop    |  Backup Next-  |   Backup Next-hop   |
+|                          |       |            |                      |          | Network  |         |            |     (Type)     |   Interface    |   hop (Type)   |      Interface      |
+|                          |       |            |                      |          | Instance |         |            |                |                |                |                     |
++==========================+=======+============+======================+==========+==========+=========+============+================+================+================+=====================+
+| 10.80.1.0/24             | 3     | local      | net_inst_mgr         | True     | ip-vrf-1 | 0       | 0          | 10.80.1.2      | ethernet-      |                |                     |
+|                          |       |            |                      |          |          |         |            | (direct)       | 1/11.0         |                |                     |
+| 10.80.1.2/32             | 3     | host       | net_inst_mgr         | True     | ip-vrf-1 | 0       | 0          | None (extract) | None           |                |                     |
+| 10.80.1.255/32           | 3     | host       | net_inst_mgr         | True     | ip-vrf-1 | 0       | 0          | None           |                |                |                     |
+|                          |       |            |                      |          |          |         |            | (broadcast)    |                |                |                     |
+| 10.90.1.0/24             | 0     | bgp-evpn   | bgp_evpn_mgr         | True     | ip-vrf-1 | 0       | 170        | 2.2.2.2/32 (in |                |                |                     |
+|                          |       |            |                      |          |          |         |            | direct/vxlan)  |                |                |                     |
++--------------------------+-------+------------+----------------------+----------+----------+---------+------------+----------------+----------------+----------------+---------------------+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```
+
+### Ping between Client 2 & 4
+
+Login to client2 using `sudo docker exec -it clab-srl-evpn-client2 sh`.
+
+Ping Client4 IP from Client2:
+
+```
+/ # ping -c 1 10.90.1.1
+PING 10.90.1.1 (10.90.1.1): 56 data bytes
+64 bytes from 10.90.1.1: seq=0 ttl=253 time=2.208 ms
+
+--- 10.90.1.1 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 2.208/2.208/2.208 ms
+```
+
+## Bonus - Interconnecting Layer 2 and Layer 3 using IRB
+
+In this section, our objective is to connect the MAC-VRF to IP-VRF so that Client1 (using IP 172.16.10.50) is able to ping Client4 (10.90.1.1).
+
+![image](images/bonus-irb.jpg)
+
+### IRB Configuration
+
+IRB configuration on Leaf1:
+
+```
+set / interface irb1 admin-state enable
+set / interface irb1 subinterface 100 ipv4 admin-state enable
+set / interface irb1 subinterface 100 ipv4 address 172.16.10.254/24
+set / interface irb1 subinterface 100 ipv4 arp evpn advertise dynamic
+```
+
+IRB configuration on Leaf2:
+
+```
+set / interface irb1 admin-state enable
+set / interface irb1 subinterface 100 ipv4 admin-state enable
+set / interface irb1 subinterface 100 ipv4 address 172.16.10.253/24
+set / interface irb1 subinterface 100 ipv4 arp evpn advertise dynamic
+```
+
+### Attaching IRB to MAC-VRF and IP-VRF
+
+On Leaf1:
+
+```
+set / network-instance mac-vrf-1 interface irb1.100
+set / network-instance ip-vrf-1 interface irb1.100
+```
+
+On Leaf2:
+
+```
+set / network-instance mac-vrf-1 interface irb1.100
+set / network-instance ip-vrf-1 interface irb1.100
+```
+
+### Ping between Client 1 & 4
+
+Login to Client 1 using `sudo docker exec –it clab-srl-evpn-client1 sh`.
+
+Ping Client4 IP from Client1:
+
+```
+/ # ping 10.90.1.1
+PING 10.90.1.1 (10.90.1.1): 56 data bytes
+64 bytes from 10.90.1.1: seq=1 ttl=63 time=755.807 ms
+64 bytes from 10.90.1.1: seq=2 ttl=63 time=0.905 ms
+64 bytes from 10.90.1.1: seq=3 ttl=63 time=0.707 ms
+64 bytes from 10.90.1.1: seq=4 ttl=63 time=0.871 ms
+64 bytes from 10.90.1.1: seq=5 ttl=63 time=0.783 ms
+^C
+--- 10.90.1.1 ping statistics ---
+6 packets transmitted, 5 packets received, 16% packet loss
+round-trip min/avg/max = 0.707/151.814/755.807 ms
+```
 
 ## Useful links
 
