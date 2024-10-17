@@ -22,11 +22,16 @@ The objective of the handson section of this workshop is the following:
 - Build Layer 3 EVPN
 
 ## Lab Topology
+
+Each workshop participant will be provided the below topology consisting of 2 leaf and 1 spine nodes along with 4 clients.
+
 ![image](images/lab-topology.jpg)
 
 ## NOS (Network Operating System)
 
 Both leafs and Spine nodes will be running Nokia [SR Linux](https://www.nokia.com/networks/ip-networks/service-router-linux-NOS/).
+
+All 4 clients will be runnin [Alpine Linux](https://alpinelinux.org/)
 
 ## Deploying the lab
 
@@ -298,6 +303,169 @@ Summary:
 4 configured neighbors, 4 configured sessions are established, 0 disabled peers
 0 dynamic peers
 ```
+
+## Configur L2 EVPN-VXLAN
+
+Now that we have established our underlay and overlay connectivity, our next step is to configure the Layer 2 EVPN-VXLAN instance.
+
+The objective is to establish a connection between Client 1 (connected to Leaf1) and Client 3 (connected to Leaf2).
+
+![image](images/l2-evpn.jpg)
+
+### Configure Client Interface
+
+Client Layer 2 interface configuration on Leaf1:
+
+```
+set / interface ethernet-1/10 description To-Client1
+set / interface ethernet-1/10 subinterface 0 type bridged
+```
+
+Client Layer 2 interface configuration on Leaf2:
+
+```
+set / interface ethernet-1/10 description To-Client3
+set / interface ethernet-1/10 subinterface 0 type bridged
+```
+
+IP addresses on the client side are pre-configured during deployment. This can be verified by logging to the Client shell and running `ip a`.
+
+To login to Client1, use:
+```
+docker exec -it clab-srl-evpn-client1 sh
+```
+
+### Configuring VXLAN
+
+Configuring VXLAN on Leaf1:
+
+```
+set / tunnel-interface vxlan13 vxlan-interface 100 type bridged
+set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
+```
+
+Configuring VXLAN on Leaf2:
+
+```
+set / tunnel-interface vxlan13 vxlan-interface 100 type bridged
+set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
+```
+
+### Configuring EVPN-VXLAN
+
+Layer 2 instance on SR Linux is called MAC-VRF.
+
+EVPN-VXLAN configuration on Leaf1:
+
+```
+set / network-instance mac-vrf-1 type mac-vrf
+set / network-instance mac-vrf-1 interface ethernet-1/10.0
+set / network-instance mac-vrf-1 vxlan-interface vxlan13.100
+set / network-instance mac-vrf-1 protocols bgp-evpn bgp-instance 1 encapsulation-type vxlan
+set / network-instance mac-vrf-1 protocols bgp-evpn bgp-instance 1 vxlan-interface vxlan13.100
+set / network-instance mac-vrf-1 protocols bgp-evpn bgp-instance 1 evi 100
+set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-distinguisher rd 1.1.1.1:100
+set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target export-rt target:65500:100
+set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target import-rt target:65500:100
+```
+
+EVPN-VXLAN configuration on Leaf2:
+
+```
+set / network-instance mac-vrf-1 type mac-vrf
+set / network-instance mac-vrf-1 interface ethernet-1/10.0
+set / network-instance mac-vrf-1 vxlan-interface vxlan13.100
+set / network-instance mac-vrf-1 protocols bgp-evpn bgp-instance 1 encapsulation-type vxlan
+set / network-instance mac-vrf-1 protocols bgp-evpn bgp-instance 1 vxlan-interface vxlan13.100
+set / network-instance mac-vrf-1 protocols bgp-evpn bgp-instance 1 evi 100
+set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-distinguisher rd 2.2.2.2:100
+set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target export-rt target:65500:100
+set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target import-rt target:65500:100
+```
+
+### EVPN verification
+
+EVPN will advertise Route Type 3 Inclusive Multicast Ethernet Tag (IMET) to discover PE devices and setup tree for BUM traffic.
+
+This route advertisement can be seen in the BGP show output using the below command.
+
+```
+show network-instance default protocols bgp routes evpn route-type summary
+```
+
+Output on Leaf1:
+```
+A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Show report for the BGP route table of network-instance "default"
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Status codes: u=used, *=valid, >=best, x=stale
+Origin codes: i=IGP, e=EGP, ?=incomplete
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+BGP Router ID: 1.1.1.1      AS: 64501      Local AS: 64501
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Type 3 Inclusive Multicast Ethernet Tag Routes
++--------+--------------------------------------+------------+---------------------+--------------------------------------+--------------------------------------+
+| Status |         Route-distinguisher          |   Tag-ID   |    Originator-IP    |               neighbor               |               Next-Hop               |
++========+======================================+============+=====================+======================================+======================================+
+| u*>    | 2.2.2.2:100                          | 0          | 2.2.2.2             | 2.2.2.2                              | 2.2.2.2                              |
+| *      | 2.2.2.2:100                          | 0          | 2.2.2.2             | 2001::2                              | 2.2.2.2                              |
++--------+--------------------------------------+------------+---------------------+--------------------------------------+--------------------------------------+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+0 Ethernet Auto-Discovery routes 0 used, 0 valid
+0 MAC-IP Advertisement routes 0 used, 0 valid
+2 Inclusive Multicast Ethernet Tag routes 1 used, 2 valid
+0 Ethernet Segment routes 0 used, 0 valid
+0 IP Prefix routes 0 used, 0 valid
+0 Selective Multicast Ethernet Tag routes 0 used, 0 valid
+0 Selective Multicast Membership Report Sync routes 0 used, 0 valid
+0 Selective Multicast Leave Sync routes 0 used, 0 valid
+```
+
+### Ping between Client 1 & 3
+
+Verify if Client 3 is able to ping Client 1
+
+Login to Client3 using:
+```
+sudo docker exec -it clab-srl-evpn-client3 sh
+```
+
+Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
+
+```
+# docker exec -it clab-srl-evpn-client3 sh
+/ # ip a
+26: eth1@if25: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
+    link/ether aa:c1:ab:3f:ae:d8 brd ff:ff:ff:ff:ff:ff
+    inet 172.16.10.60/24 scope global eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a8c1:abff:fe3f:aed8/64 scope link
+       valid_lft forever preferred_lft forever
+/ #
+```
+
+The MAC address of Client3 eth1 interface is aa:c1:ab:3f:ae:d8.
+
+Ping Client1 IP from Client3:
+
+```
+ping -c 1 172.16.10.50
+```
+
+```
+/ # ping -c 1 172.16.10.50
+PING 172.16.10.50 (172.16.10.50): 56 data bytes
+64 bytes from 172.16.10.50: seq=0 ttl=64 time=0.886 ms
+
+--- 172.16.10.50 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.886/0.886/0.886 ms
+```
+
+Ping is successful. We have now established a Layer2 EVPN connection between Client1 & Client3.
+
+## 
 
 ## Useful links
 
