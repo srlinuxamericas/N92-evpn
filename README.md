@@ -438,7 +438,7 @@ Summary:
 ## Configure L2 EVPN-VXLAN
 
 > <p style="color:red">!!! If you would like to skip configuring BGP and directly start with this section, <u> offline (e.g on your laptop)</u>. 
-> point the startup config file location in your your topology file (srl-evpn.clab.yml) to `config/startup/withbgp/`</p>
+> point the startup config file location in your your topology file (srl-evpn.clab.yml) to `configs/fabric/startup-with-bgp/leaf1-startup-bgp.cfg (for Leaf1)`</p>
 
 Now that we have established our underlay and overlay connectivity, our next step is to configure the Layer 2 EVPN-VXLAN instance.
 
@@ -987,7 +987,9 @@ By now, you should have an understanding of how this ping worked. If you have qu
 
 If you would like to explore all of the above without doing any manual configurations, we got your covered !
 
-In your topology file (srl-evpn.clab.yml), point the startup config file location to `config/startup/complete/`.
+Go to [Complete startup config](n92-evpn-lab/configs/fabric/startup-complete) to see the full configuration for each device.
+
+In your topology file (srl-evpn.clab.yml), point the startup config file location to `configs/fabric/startup-complete/leaf1-startup-complete.cfg` (for Leaf1).
 
 Destroy any existing lab using the command `sudo clab destroy -t srl-evpn.clab.yml --cleanup`.
 
