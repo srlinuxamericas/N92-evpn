@@ -7,12 +7,12 @@ If you need help, please raise your hand and a Nokia team member will be happy t
 
 Shortcut links to major sections in this README:
 
-
-| [Lab Topology]() | [Deploying the lab]() |
-| --- | --- |
-| [BGP Underay]() | [BGP Overlay]() |
-| [Layer 2 EPVN]() | [Layer 3 EVPN]() |
-| [CLI Quick Reference]() |  |
+|   |   |
+|---|---|
+| [Lab Topology](#lab-topology) | [Deploying the lab](#deployin-the-lab) |
+| [BGP Underay](#configure-bgp-underlay) | [BGP Overlay](#configure-bgp-for-overlay) |
+| [Layer 2 EPVN](#configure-l2-evpn-vxlan) | [Layer 3 EVPN](#configure-layer-3-evpn-vxlan) |
+| [CLI Quick Reference](#sr-linux-configuration-mode) | [Bonus](#bonus---interconnecting-layer-2-and-layer-3-using-irb) |
 
 
 ## Lab Environment
