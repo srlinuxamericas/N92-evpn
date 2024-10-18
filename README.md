@@ -5,33 +5,43 @@ Pre-requisite: A laptop with SSH client
 
 If you need help, please raise your hand and a Nokia team member will be happy to assist.
 
+Shortcut links to major sections in this README:
+
+
+| [Lab Topology]() | [Deploying the lab]() |
+| --- | --- |
+| [BGP Underay]() | [BGP Overlay]() |
+| [Layer 2 EPVN]() | [Layer 3 EVPN]() |
+| [CLI Quick Reference]() |  |
+
+
 ## Lab Environment
 
-A Nokia team member will provide you with a sheet that contains:
-- your group and VM ID
+A Nokia team member will provide you with a card that contains:
+- your VM hostname
 - SSH credentials to the VM instance
 - URL of this repo
 
 > <p style="color:red">!!! Make sure to backup any code, config, ... <u> offline (e.g on your laptop)</u>. 
-> The VM instances might be destroyed once the Workshop is concluded.</p>
+> The VM instances will be destroyed once the Workshop is concluded.</p>
 
-# Workshop
+## Workshop
 The objective of the hands on section of this workshop is the following:
 - Build a DC fabric with leaf and spine
-- Build Layer 2 EVPN
-- Build Layer 3 EVPN
+- Build Layer 2 EVPN-VXLAN
+- Build Layer 3 EVPN-VXLAN
 
 ## Lab Topology
 
-Each workshop participant will be provided the below topology consisting of 2 leaf and 1 spine nodes along with 4 clients.
+Each workshop participant will be provided with the below topology consisting of 2 leaf and 1 spine nodes along with 4 clients.
 
 ![image](images/lab-topology.jpg)
 
 ## NOS (Network Operating System)
 
-Both leafs and Spine nodes will be running Nokia [SR Linux](https://www.nokia.com/networks/ip-networks/service-router-linux-NOS/).
+Both leafs and Spine nodes will be running the latest Nokia [SR Linux](https://www.nokia.com/networks/ip-networks/service-router-linux-NOS/) release 24.7.2.
 
-All 4 clients will be runnin [Alpine Linux](https://alpinelinux.org/)
+All 4 clients will be running [Alpine Linux](https://alpinelinux.org/)
 
 ## Deploying the lab
 
@@ -45,7 +55,7 @@ But in case you need it, use the below command to clone this repo to your VM.
 git clone https://github.com/srlinuxamericas/N92-evpn.git
 ```
 
-Verify that this git repo files are now available on your VM.
+Verify that the git repo files are now available on your VM.
 
 ```
 ls -lrt N92-evpn/n92-evpn-lab/
@@ -60,7 +70,21 @@ sudo clab deploy -t n92-evpn-lab/srl-evpn.clab.yml
 
 [Containerlab](https://containerlab.dev/) will deploy the lab and display a table with the list of nodes and their IPs.
 
-To display current deployed labs at any time, use:
+```
++---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
+| # |         Name          | Container ID |            Image             |     Kind      |  State  |  IPv4 Address   |     IPv6 Address      |
++---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
+| 1 | clab-srl-evpn-client1 | 5d035710d740 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.10/24 | 2001:172:20:20::10/64 |
+| 2 | clab-srl-evpn-client2 | b8eae8f0c316 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.11/24 | 2001:172:20:20::11/64 |
+| 3 | clab-srl-evpn-client3 | 253b8a183d91 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.12/24 | 2001:172:20:20::12/64 |
+| 4 | clab-srl-evpn-client4 | c686fbbce2b7 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.13/24 | 2001:172:20:20::13/64 |
+| 5 | clab-srl-evpn-leaf1   | 50bddf973b6a | ghcr.io/nokia/srlinux:latest | nokia_srlinux | running | 172.20.20.2/24  | 2001:172:20:20::2/64  |
+| 6 | clab-srl-evpn-leaf2   | 4b5b1ddb7f7b | ghcr.io/nokia/srlinux:latest | nokia_srlinux | running | 172.20.20.4/24  | 2001:172:20:20::4/64  |
+| 7 | clab-srl-evpn-spine   | 04ff754b4085 | ghcr.io/nokia/srlinux:latest | nokia_srlinux | running | 172.20.20.3/24  | 2001:172:20:20::3/64  |
++---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
+```
+
+To display all deployed labs on your VM at any time, use:
 
 ```
 sudo clab inspect --all
@@ -68,7 +92,7 @@ sudo clab inspect --all
 
 ## Connecting to the devices
 
-Find the nodename or IP address of the device and then use SSH.
+Find the nodename or IP address of the device from the above output and then use SSH.
 
 Username: `admin`
 
@@ -78,7 +102,7 @@ Password: Refer to the provided sheet
 ssh admin@clab-srl-evpn-leaf1
 ```
 
-To login to the client, identify the client hostname using the `clab inspect` command above and then:
+To login to the client, identify the client hostname using the `sudo clab inspect --all` command above and then:
 
 ```
 sudo docker exec –it clab-srl-evpn-client3 sh
@@ -88,9 +112,23 @@ sudo docker exec –it clab-srl-evpn-client3 sh
 
 When the lab is deployed with the default startup config, all the links are created with IPv4 and IPv6 addresses.
 
-This allows to start configuring the protocols right away!
+This allows to start configuring the protocols right away.
 
-Check the [startup config](n92-evpn-lab/configs/fabric/startup) files to see how interfaces and IP addresses are configured in SR Linux.
+Here's a summary of what is included in the startup config:
+
+- Configure interfaces between Leaf & Spine
+- Configure interface between Leaf & Client
+- Configure system loopback
+- Configure route policy to advertise system loopback (this policy will be later applied under BGP)
+- Configure default Network Instance (VRF) and add system loopback and Leaf/Spine interfaces to this VRF
+
+Check the [startup config](n92-evpn-lab/configs/fabric/startup) files to see how these objects are configured in SR Linux.
+
+To view Interface status use:
+
+```
+show interface
+```
 
 ### IPv4 Link Addressing
 
@@ -116,15 +154,7 @@ Example on spine to Leaf1 for IPv6:
 ping6 -c 3 192:168:10::2 network-instance default
 ```
 
-## Configure BGP Underlay
-
-We are now ready to start configuring the fabric for EVPN.
-
-The first step is to configure BGP for underlay.
-
-![image](images/bgp-underlay.jpg)
-
-### SR Linux Configuration Mode
+## SR Linux Configuration Mode
 
 To enter candidate configuration edit mode in SR Linux, use:
 
@@ -137,6 +167,44 @@ To commit the configuration in SR Linux, use:
 ```
 commit stay
 ```
+
+Here's a reference table for some commonly used commands.
+
+| Action | Command |
+| --- | --- |
+| Enter Candidate mode | `enter candidate {private}` |
+| Commit configuration changes | `commit {now\|stay}` |
+| | `now` – commits and exits from candidate mode |
+| | `stay` – commits and stays in candidate mode |
+| Delete configuration elements | `delete` |
+| | Eg: `delete interface ethernet-1/5` |
+| Discard configuration changes | `discard {now\|stay}` |
+| Compare candidate to running | `diff running /` |
+| View configuration in current mode & context | `info {flat}` |
+| View configuration in another mode & context | `info {flat} from state /interface ethernet-1/1` |
+| Output modifiers | `<command> \| as {table\|json\|yaml}` |
+| Access Linux shell | `bash` |
+
+
+## Configure BGP Underlay
+
+We are now ready to start configuring the fabric for EVPN.
+
+The first step is to configure BGP for underlay.
+
+Underlay refers to the physical connectivity between Leaf and Spine that are directly connected. This forms the basis for reachability of a node from all other nodes.
+
+BGP is commonly used for this purpose in a Data Center network. Other options are OSPF or IS-IS.
+
+Each Leaf is a in separate Autonomous System (AS) and Spine is in it's own AS. This is typical in Clos network.
+
+We will use the IPv4 and IPv6 interface address to form BGP sessions between Leaf and Spine nodes.
+
+We will export the system loopback IP over BGP to other nodes. This is required to create our overlay sessions in the next step.
+
+The export policies are already created as part of the startup config. In this step, we will apply them to BGP.
+
+![image](images/bgp-underlay.jpg)
 
 ### BGP Underlay Configuration
 
@@ -207,7 +275,9 @@ The BGP underlay sessions should be UP now. Check using the following commands o
 show network-instance default protocols bgp neighbor
 ```
 
-The output confirms that both IPv4 and IPv6 BGP neighbor sessions are established.
+The output confirms that both IPv4 and IPv6 BGP neighbor sessions are established between Spine and the 2 Leaf nodes.
+
+The last column in the output shows the number of routes Received/Active/Transmitted by BGP. The count is 1 as we are exporting the system loopback IP.
 
 ```
 A:spine# show network-instance default protocols bgp neighbor
@@ -230,11 +300,69 @@ Summary:
 0 dynamic peers
 ```
 
+The route table for the default network instance (VRF) should now show the system loopback IP of other nodes.
+
+```
+show network-instance default route-table all
+```
+
+Output on Leaf1:
+
+```
+A:leaf1# show network-instance default route-table all
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IPv4 unicast route table of network instance default
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
++--------------------------+-------+------------+----------------------+----------+----------+---------+------------+----------------+----------------+----------------+---------------------+
+|          Prefix          |  ID   | Route Type |     Route Owner      |  Active  |  Origin  | Metric  |    Pref    |    Next-hop    |    Next-hop    |  Backup Next-  |   Backup Next-hop   |
+|                          |       |            |                      |          | Network  |         |            |     (Type)     |   Interface    |   hop (Type)   |      Interface      |
+|                          |       |            |                      |          | Instance |         |            |                |                |                |                     |
++==========================+=======+============+======================+==========+==========+=========+============+================+================+================+=====================+
+| 1.1.1.1/32               | 5     | host       | net_inst_mgr         | True     | default  | 0       | 0          | None (extract) | None           |                |                     |
+| 2.2.2.2/32               | 0     | bgp        | bgp_mgr              | True     | default  | 0       | 170        | 192.168.10.2/3 | ethernet-1/1.0 |                |                     |
+|                          |       |            |                      |          |          |         |            | 1 (indirect/lo |                |                |                     |
+|                          |       |            |                      |          |          |         |            | cal)           |                |                |                     |
+| 192.168.10.2/31          | 1     | local      | net_inst_mgr         | True     | default  | 0       | 0          | 192.168.10.2   | ethernet-1/1.0 |                |                     |
+|                          |       |            |                      |          |          |         |            | (direct)       |                |                |                     |
+| 192.168.10.2/32          | 1     | host       | net_inst_mgr         | True     | default  | 0       | 0          | None (extract) | None           |                |                     |
++--------------------------+-------+------------+----------------------+----------+----------+---------+------------+----------------+----------------+----------------+---------------------+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IPv4 routes total                    : 4
+IPv4 prefixes with active routes     : 4
+IPv4 prefixes with active ECMP routes: 0
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IPv6 unicast route table of network instance default
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
++--------------------------+-------+------------+----------------------+----------+----------+---------+------------+----------------+----------------+----------------+---------------------+
+|          Prefix          |  ID   | Route Type |     Route Owner      |  Active  |  Origin  | Metric  |    Pref    |    Next-hop    |    Next-hop    |  Backup Next-  |   Backup Next-hop   |
+|                          |       |            |                      |          | Network  |         |            |     (Type)     |   Interface    |   hop (Type)   |      Interface      |
+|                          |       |            |                      |          | Instance |         |            |                |                |                |                     |
++==========================+=======+============+======================+==========+==========+=========+============+================+================+================+=====================+
+| 192:168:10::2/127        | 1     | local      | net_inst_mgr         | True     | default  | 0       | 0          | 192:168:10::2  | ethernet-1/1.0 |                |                     |
+|                          |       |            |                      |          |          |         |            | (direct)       |                |                |                     |
+| 192:168:10::2/128        | 1     | host       | net_inst_mgr         | True     | default  | 0       | 0          | None (extract) | None           |                |                     |
+| 2001::1/128              | 5     | host       | net_inst_mgr         | True     | default  | 0       | 0          | None (extract) | None           |                |                     |
+| 2001::2/128              | 0     | bgp        | bgp_mgr              | True     | default  | 0       | 170        | 192:168:10::2/ | ethernet-1/1.0 |                |                     |
+|                          |       |            |                      |          |          |         |            | 127 (indirect/ |                |                |                     |
+|                          |       |            |                      |          |          |         |            | local)         |                |                |                     |
++--------------------------+-------+------------+----------------------+----------+----------+---------+------------+----------------+----------------+----------------+---------------------+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+IPv6 routes total                    : 4
+IPv6 prefixes with active routes     : 4
+IPv6 prefixes with active ECMP routes: 0
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```
+
+Now we are ready to configure the overlay.
+
 ## Configure BGP for Overlay
 
-BGP is required to advertise EVPN routes between the leaf devices.
+Overlay refers to the connectivity between nodes that are not necessarily directly connected.
 
-For establishing overlay BGP neighbors, we will use the system loopback IP of the Leaf nodes. These IPs are pre-configured as part of initial lab deployment and can be verified using `show interface system0` command.
+Our end goal is to have an EVPN service between Leaf1 and Leaf2. BGP is required to advertise EVPN routes between the leaf devices.
+
+For establishing overlay BGP session between Leaf1 and Leaf2, we will use the system loopback IP of the Leaf nodes. These IPs are pre-configured as part of initial lab deployment and can be verified using `show interface system0` command.
 
 BGP overlay configuration is not required on the Spine as Spine is not aware of EVPN routes.
 
@@ -281,7 +409,10 @@ show network-instance default protocols bgp neighbor
 ```
 
 The output confirms that EVPN neigbor sessions are established to both the IPv4 and IPv6 loopback IPs.
+
 The output also displays the underlay IPv4 and IPv6 sessions.
+
+The devices are not currently advertising any EVPN routes which is the last column is all 0s.
 
 ```
 A:leaf1# show network-instance default protocols bgp neighbor
@@ -306,29 +437,36 @@ Summary:
 
 ## Configure L2 EVPN-VXLAN
 
+> <p style="color:red">!!! If you would like to skip configuring BGP and directly start with this section, <u> offline (e.g on your laptop)</u>. 
+> point the startup config file location in your your topology file (srl-evpn.clab.yml) to `config/startup/withbgp/`</p>
+
 Now that we have established our underlay and overlay connectivity, our next step is to configure the Layer 2 EVPN-VXLAN instance.
 
 The objective is to establish a connection between Client 1 (connected to Leaf1) and Client 3 (connected to Leaf2).
+
+Both the clients are in the same subnet (172.16.10.0/24) and therefore, this will be a Layer 2 connection. From a client perspective, it is just like they are connected to a Layer 2 switch.
 
 ![image](images/l2-evpn.jpg)
 
 ### Configure Client Interface
 
-Client Layer 2 interface configuration on Leaf1:
+For Layer 2 client interfaces, it is not required to configure IPs on the Leaf interfaces facing the client.
+
+Client facing Layer 2 interface configuration on Leaf1:
 
 ```
 set / interface ethernet-1/10 description To-Client1
 set / interface ethernet-1/10 subinterface 0 type bridged
 ```
 
-Client Layer 2 interface configuration on Leaf2:
+Client facing Layer 2 interface configuration on Leaf2:
 
 ```
 set / interface ethernet-1/10 description To-Client3
 set / interface ethernet-1/10 subinterface 0 type bridged
 ```
 
-IP addresses on the client side are pre-configured during deployment. This can be verified by logging in to the Client shell and running `ip a`.
+IP addresses on the client side are pre-configured (on interface eth1) during deployment. This can be verified by logging in to the Client shell and running `ip a`.
 
 To login to Client1, use:
 ```
@@ -350,6 +488,12 @@ Output on Client1:
 
 ### Configuring VXLAN
 
+VXLAN is the transport protocol for this EVPN instance.
+
+All data packets will be encapsulated in VXLAN and transported to the destination.
+
+On each Leaf, a VXLAN tunnel interface should be created with a unique VNI.
+
 Configuring VXLAN on Leaf1:
 
 ```
@@ -366,7 +510,17 @@ set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
 
 ### Configuring Layer 2 EVPN-VXLAN
 
-Layer 2 instance on SR Linux is called MAC-VRF.
+Layer 2 instance on SR Linux is called MAC-VRF. To learn more about SR Linux Network Instances, visit [SR Linux Documentation](to be added).
+
+In this step, we will configure a mac-vrf on each Leaf and add the client facing interface along with the VXLAN tunnel interface to the mac-vrf instance.
+
+Each EVPN instance is uniquely identified by an EVI across the entire network.
+
+When advertising an EVPN route over BGP (Multi-Protocol BGP), each route should include a Route Distinguisher (RD) and Route Target (RT).
+
+RD is used to identify the source of the route. In our case, we will use the system-IP:EVI.
+
+RT is used as an identifier (or condition) to import the route on the far end device.
 
 EVPN-VXLAN configuration on Leaf1:
 
@@ -396,9 +550,9 @@ set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target e
 set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target import-rt target:65500:100
 ```
 
-### EVPN verification
+### Layer 2 EVPN verification
 
-EVPN will advertise Route Type 3 Inclusive Multicast Ethernet Tag (IMET) to discover PE devices and setup tree for BUM traffic.
+EVPN will advertise Route Type 3 Inclusive Multicast Ethernet Tag (IMET) to discover PE devices and setup tree for BUM (Broadcast, Unknown, Multicast) traffic.
 
 This route advertisement can be seen in the BGP show output using the below command.
 
@@ -458,13 +612,15 @@ Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
 / #
 ```
 
-The MAC address of Client3 eth1 interface is aa:c1:ab:67:32:61.
+The MAC address of Client3 eth1 interface is aa:c1:ab:67:32:61. This could be different in your setup.
 
 Ping Client1 IP from Client3:
 
 ```
 ping -c 1 172.16.10.50
 ```
+
+Output on Client1:
 
 ```
 / # ping -c 1 172.16.10.50
@@ -477,6 +633,12 @@ round-trip min/avg/max = 0.886/0.886/0.886 ms
 ```
 
 Ping is successful. We have now established a Layer2 EVPN connection between Client1 & Client3.
+
+Let's understand how this ping worked.
+
+When we initiated the ping from Client3, with the first ping packet an ARP was sent for the destination IP of Client1. Unlike a traditional VPLS, the ARP is not flooded to all devices but only sent to the PE devices discovered using EVPN Route Type 3 (RT3).
+
+At the same time, Leaf2 connected to Client3 learns the MAC of Client3 from the source MAC address field of the ICMP ping packet. Leaf2 sends an EVPN MAC-IP Route Type 2 advertisement to Leaf1 advertising Client3 MAC with Leaf2 as next-hop.
 
 Now let's verify the MAC-IP advertisement using EVPN Route Type 2.
 
@@ -508,13 +670,26 @@ Type 2 MAC-IP Advertisement Routes
 +--------+------------------+------------+-------------------+------------------+------------------+------------------+------------------+--------------------------------+------------------+
 ```
 
-Verify the MAC Address table using the below command.
+When Leaf1 receives the ARP from Leaf2 for Client1 IP, Leaf1 will broadcast that ARP to it's connected Client. Client1 responds to the ARP.
+
+Now Leaf1 will send EVPN Route Type2 to Leaf2 advertising Client1 MAC address with Leaf1 system IP as next-hop. Verify this using the same command above on Leaf2.
+
+At this time, both Leaf nodes have learned the remote Client MAC address.
+
+Verify the MAC Address table on the Leaf using the below command.
 
 ```
 show network-instance mac-vrf-1 bridge-table mac-table all
 ```
 
 Output on Leaf1:
+
+The table shows that Client1 (locally connected to Leaf1) MAC was learned directly over the interface facing the client.
+
+Client3 MAC address was learned over the VXLAN tunnel. The ICMP ping packet will be encapsulated in VXLAN and sent to the destination 2.2.2.2 (Leaf2).
+
+On Leaf2, the VXLAN encapsulation will be removed and the packet will be forwarded to Client3.
+
 
 ```
 A:leaf1# show network-instance mac-vrf-1 bridge-table mac-table all
@@ -559,6 +734,8 @@ The objective is to connect Client 2 and Client 4 over a Layer 3 EVPN.
 
 ### Configure Client Interface
 
+Client2 & 4 are Layer 3 clients with IPs in different subnets.
+
 Client Layer 3 interface configuration on Leaf1:
 
 ```
@@ -585,6 +762,8 @@ IP addresses on the client side are pre-configured during deployment. This can b
 
 ### Configuring VXLAN
 
+We will create a Layer 3 VXLAN tunnel between Leaf1 and Leaf2 with a unique VNI.
+
 Configuring VXLAN on Leaf1:
 
 ```
@@ -601,7 +780,11 @@ set / tunnel-interface vxlan24 vxlan-interface 200 ingress vni 200
 
 ### Configuring Layer 3 EVPN-VXLAN
 
-Layer 3 instance on SR Linux is called IP-VRF.
+Layer 3 instance on SR Linux is called IP-VRF. To learn more about SR Linux Network Instances, visit [SR Linux Documentation](to be added)
+
+We will create an ip-vrf and include the client facing interface and the vxlan tunnel in this instance.
+
+RD & RT will be separate from the Layer2 instance.
 
 EVPN-VXLAN configuration on Leaf1:
 
@@ -635,7 +818,7 @@ set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-target im
 
 ### Layer 3 EVPN Route Verification
 
-In Layer 3 EVPN, Route Type 5 is used to advertise IP prefixes.
+When Layer 3 EVPN is enabled, the Leaf nodes will start advertising the client facing interface IPs to each other using EVPN IP-prefix Route Type 5.
 
 This can verified using the below command.
 
@@ -664,6 +847,8 @@ Type 5 IP Prefix Routes
 +--------+----------------------------+------------+---------------------+----------------------------+----------------------------+----------------------------+----------------------------+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
+
+The remote routes will also be installed on the Leaf's route table.
 
 Verify the VRF route table on Leaf1 using the below command:
 
@@ -710,13 +895,35 @@ PING 10.90.1.1 (10.90.1.1): 56 data bytes
 round-trip min/avg/max = 2.208/2.208/2.208 ms
 ```
 
+Let's understand how this ping worked.
+
+On Client2, there is a static route defined for destination 10.90.1.0/24 with Leaf1 as next-hop. This can be verified using `ip r` command on the Client.
+
+```
+/ # ip r
+default via 172.20.20.1 dev eth0
+10.80.1.0/24 dev eth1 scope link  src 10.80.1.1
+10.90.1.0/24 via 10.80.1.2 dev eth1
+172.20.20.0/24 dev eth0 scope link  src 172.20.20.4
+```
+
+When the ICMP ping packet reaches Leaf1, it checks the destination IP (10.90.1.1) against it's route-table. As seen in the above route-table output, the next-hop for this destination is a VXLAN tunnel to 2.2.2.2 (Leaf2) with VNI 200.
+
+The ICMP packet is encapsulated in VXLAN and sent to 2.2.2.2 (Leaf2). On Leaf2, the VXLAN encapsulation is removed and the ICMP packet is forwarded to the Client. The ping reponse follows similar path back to Leaf1.
+
 ## Bonus - Interconnecting Layer 2 and Layer 3 using IRB
 
 In this section, our objective is to connect the MAC-VRF to IP-VRF so that Client1 (using IP 172.16.10.50) is able to ping Client4 (10.90.1.1).
 
+Typical use case is when there is a mix of Layer 2 and Layer 3 devices within the same client network.
+
+We will use an IRB (Integrated Routing and Bridging) to inter-connect Layer 2 ( mac-vrf) and Layer 3 (ip-vrf).
+
 ![image](images/bonus-irb.jpg)
 
 ### IRB Configuration
+
+The IP address on the IRB will act as a gateway for Layer 2 devices.
 
 IRB configuration on Leaf1:
 
@@ -737,6 +944,8 @@ set / interface irb1 subinterface 100 ipv4 arp evpn advertise dynamic
 ```
 
 ### Attaching IRB to MAC-VRF and IP-VRF
+
+The same IRB interface is now attached to both network instances.
 
 On Leaf1:
 
@@ -771,6 +980,18 @@ PING 10.90.1.1 (10.90.1.1): 56 data bytes
 6 packets transmitted, 5 packets received, 16% packet loss
 round-trip min/avg/max = 0.707/151.814/755.807 ms
 ```
+
+By now, you should have an understanding of how this ping worked. If you have questions, please raise your hand and a Nokia team member will be happy to help.
+
+## Explore this lab with everything pre-configured
+
+If you would like to explore all of the above without doing any manual configurations, we got your covered !
+
+In your topology file (srl-evpn.clab.yml), point the startup config file location to `config/startup/complete/`.
+
+Destroy any existing lab using the command `sudo clab destroy -t srl-evpn.clab.yml --cleanup`.
+
+Then deploy the lab using `sudo clab deploy -t srl-evpn.clab.yml`.
 
 ## Useful links
 
