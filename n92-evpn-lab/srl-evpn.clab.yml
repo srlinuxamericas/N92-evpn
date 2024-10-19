@@ -33,6 +33,7 @@ topology:
       mgmt-ipv6: 2001:172:20:20::10
       binds:
         - ./configs/hosts/client1/interfaces:/etc/network/interfaces
+        - ./configs/hosts/client1/staticroute:/etc/conf.d/staticroute        
       exec:
         - /root/restart-services.sh
     client2:
@@ -50,6 +51,7 @@ topology:
       mgmt-ipv6: 2001:172:20:20::12
       binds:
         - ./configs/hosts/client3/interfaces:/etc/network/interfaces
+        - ./configs/hosts/client3/staticroute:/etc/conf.d/staticroute        
       exec:
         - /root/restart-services.sh
     client4:
