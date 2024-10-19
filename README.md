@@ -510,7 +510,7 @@ set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
 
 ### Configuring Layer 2 EVPN-VXLAN
 
-Layer 2 instance on SR Linux is called MAC-VRF. To learn more about SR Linux Network Instances, visit [SR Linux Documentation](to be added).
+Layer 2 instance on SR Linux is called MAC-VRF. To learn more about SR Linux Network Instances, visit [SR Linux Documentation](https://documentation.nokia.com/srlinux/24-7/books/config-basics/network-instances.html).
 
 In this step, we will configure a mac-vrf on each Leaf and add the client facing interface along with the VXLAN tunnel interface to the mac-vrf instance.
 
@@ -780,7 +780,7 @@ set / tunnel-interface vxlan24 vxlan-interface 200 ingress vni 200
 
 ### Configuring Layer 3 EVPN-VXLAN
 
-Layer 3 instance on SR Linux is called IP-VRF. To learn more about SR Linux Network Instances, visit [SR Linux Documentation](to be added)
+Layer 3 instance on SR Linux is called IP-VRF. To learn more about SR Linux Network Instances, visit [SR Linux Documentation](https://documentation.nokia.com/srlinux/24-7/books/config-basics/network-instances.html)
 
 We will create an ip-vrf and include the client facing interface and the vxlan tunnel in this instance.
 
