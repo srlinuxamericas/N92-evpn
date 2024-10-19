@@ -437,7 +437,7 @@ Summary:
 
 ## Configure L2 EVPN-VXLAN
 
-> <p style="color:red">!!! If you would like to skip configuring BGP and directly start with this section, <u> offline (e.g on your laptop)</u>. 
+> <p style="color:red">!!! If you would like to skip configuring BGP and directly start with this section, 
 > point the startup config file location in your your topology file (srl-evpn.clab.yml) to `configs/fabric/startup-with-bgp/leaf1-startup-bgp.cfg (for Leaf1)`</p>
 
 Now that we have established our underlay and overlay connectivity, our next step is to configure the Layer 2 EVPN-VXLAN instance.
