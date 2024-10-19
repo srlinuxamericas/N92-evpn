@@ -51,26 +51,26 @@ This Git repo is already cloned to your VM.
 
 But in case you need it, use the below command to clone this repo to your VM.
 
-```
-git clone https://github.com/srlinuxamericas/N92-evpn.git
+```bash
+sudo git clone https://github.com/srlinuxamericas/N92-evpn.git
 ```
 
 Verify that the git repo files are now available on your VM.
 
-```
+```bash
 ls -lrt N92-evpn/n92-evpn-lab/
 ```
 
 To deploy the lab, run the following:
 
-```
+```bash
 cd N92-evpn
 sudo clab deploy -t n92-evpn-lab/srl-evpn.clab.yml
 ```
 
 [Containerlab](https://containerlab.dev/) will deploy the lab and display a table with the list of nodes and their IPs.
 
-```
+```bash
 +---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
 | # |         Name          | Container ID |            Image             |     Kind      |  State  |  IPv4 Address   |     IPv6 Address      |
 +---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
@@ -86,7 +86,7 @@ sudo clab deploy -t n92-evpn-lab/srl-evpn.clab.yml
 
 To display all deployed labs on your VM at any time, use:
 
-```
+```bash
 sudo clab inspect --all
 ```
 
@@ -98,13 +98,13 @@ Username: `admin`
 
 Password: Refer to the provided card
 
-```
+```bash
 ssh admin@clab-srl-evpn-leaf1
 ```
 
 To login to the client, identify the client hostname using the `sudo clab inspect --all` command above and then:
 
-```
+```bash
 sudo docker exec –it clab-srl-evpn-client3 sh
 ```
 
@@ -121,12 +121,13 @@ Here's a summary of what is included in the startup config:
 - Configure system loopback
 - Configure route policy to advertise system loopback (this policy will be later applied under BGP)
 - Configure default Network Instance (VRF) and add system loopback and Leaf/Spine interfaces to this VRF
+- Configure IPs and static routes on Clients
 
 Check the [startup config](n92-evpn-lab/configs/fabric/startup) files to see how these objects are configured in SR Linux.
 
-To view Interface status use:
+To view Interface status on SR Linux use:
 
-```
+```srl
 show interface
 ```
 
@@ -142,15 +143,15 @@ show interface
 
 After the lab is deployed, check reachability between leaf and spine devices using ping.
 
-Example on spine to Leaf1 for IPv4:
+Example on spine to Leaf1 using IPv4:
 
-```
+```srl
 ping -c 3 192.168.10.2 network-instance default
 ```
 
-Example on spine to Leaf1 for IPv6:
+Example on spine to Leaf1 using IPv6:
 
-```
+```srl
 ping6 -c 3 192:168:10::2 network-instance default
 ```
 
@@ -158,13 +159,13 @@ ping6 -c 3 192:168:10::2 network-instance default
 
 To enter candidate configuration edit mode in SR Linux, use:
 
-```
+```srl
 enter candidate
 ```
 
 To commit the configuration in SR Linux, use:
 
-```
+```srl
 commit stay
 ```
 
@@ -196,7 +197,7 @@ Underlay refers to the physical connectivity between Leaf and Spine that are dir
 
 BGP is commonly used for this purpose in a Data Center network. Other options are OSPF or IS-IS.
 
-Each Leaf is a in separate Autonomous System (AS) and Spine is in it's own AS. This is typical in Clos network.
+Each Leaf is in a separate Autonomous System (AS) and Spine is in it's own AS. This is typical in a Clos network.
 
 We will use the IPv4 and IPv6 interface address to form BGP sessions between Leaf and Spine nodes.
 
@@ -210,7 +211,7 @@ The export policies are already created as part of the startup config. In this s
 
 BGP underlay configuration on Leaf1:
 
-```
+```srl
 set / network-instance default protocols bgp autonomous-system 64501
 set / network-instance default protocols bgp router-id 1.1.1.1
 set / network-instance default protocols bgp ebgp-default-policy import-reject-all false
@@ -228,7 +229,7 @@ set / network-instance default protocols bgp neighbor 192:168:10::3 afi-safi ipv
 
 BGP underlay configuration on Leaf2:
 
-```
+```srl
 set / network-instance default protocols bgp autonomous-system 64502
 set / network-instance default protocols bgp router-id 2.2.2.2
 set / network-instance default protocols bgp ebgp-default-policy import-reject-all false
@@ -246,7 +247,7 @@ set / network-instance default protocols bgp neighbor 192:168:20::3 afi-safi ipv
 
 BGP underlay configuration on Spine:
 
-```
+```srl
 set / network-instance default protocols bgp autonomous-system 64500
 set / network-instance default protocols bgp router-id 3.3.3.3
 set / network-instance default protocols bgp ebgp-default-policy import-reject-all false
@@ -269,17 +270,17 @@ set / network-instance default protocols bgp neighbor 192:168:20::2 afi-safi ipv
 
 ### BGP Underlay Verification
 
-The BGP underlay sessions should be UP now. Check using the following commands on the Spine.
+The BGP underlay sessions should be UP now. Check using the following command on the Spine.
 
-```
+```srl
 show network-instance default protocols bgp neighbor
 ```
 
-The output confirms that both IPv4 and IPv6 BGP neighbor sessions are established between Spine and the 2 Leaf nodes.
+The output below confirms that both IPv4 and IPv6 BGP neighbor sessions are established between Spine and the 2 Leaf nodes.
 
 The last column in the output shows the number of routes Received/Active/Transmitted by BGP. The count is 1 as we are exporting the system loopback IP.
 
-```
+```srl
 A:spine# show network-instance default protocols bgp neighbor
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 BGP neighbor summary for network-instance "default"
@@ -302,13 +303,13 @@ Summary:
 
 The route table for the default network instance (VRF) should now show the system loopback IP of other nodes.
 
-```
+```srl
 show network-instance default route-table all
 ```
 
 Output on Leaf1:
 
-```
+```srl
 A:leaf1# show network-instance default route-table all
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 IPv4 unicast route table of network instance default
@@ -372,7 +373,7 @@ BGP overlay configuration is not required on the Spine as Spine is not aware of 
 
 BGP Overlay configuration on Leaf1:
 
-```
+```srl
 set / network-instance default protocols bgp group evpn peer-as 65500
 set / network-instance default protocols bgp group evpn multihop admin-state enable
 set / network-instance default protocols bgp group evpn afi-safi evpn admin-state enable
@@ -387,7 +388,7 @@ set / network-instance default protocols bgp neighbor 2001::2 transport local-ad
 
 BGP Overlay configuration on Leaf2:
 
-```
+```srl
 set / network-instance default protocols bgp group evpn peer-as 65500
 set / network-instance default protocols bgp group evpn multihop admin-state enable
 set / network-instance default protocols bgp group evpn afi-safi evpn admin-state enable
@@ -404,7 +405,7 @@ set / network-instance default protocols bgp neighbor 2001::1 transport local-ad
 
 The BGP overlay sessions should be UP now. Check using the following commands on Leaf1 or Leaf2.
 
-```
+```srl
 show network-instance default protocols bgp neighbor
 ```
 
@@ -414,7 +415,7 @@ The output also displays the underlay IPv4 and IPv6 sessions.
 
 The devices are not currently advertising any EVPN routes which is the last column is all 0s.
 
-```
+```srl
 A:leaf1# show network-instance default protocols bgp neighbor
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 BGP neighbor summary for network-instance "default"
@@ -454,14 +455,14 @@ For Layer 2 client interfaces, it is not required to configure IPs on the Leaf i
 
 Client facing Layer 2 interface configuration on Leaf1:
 
-```
+```srl
 set / interface ethernet-1/10 description To-Client1
 set / interface ethernet-1/10 subinterface 0 type bridged
 ```
 
 Client facing Layer 2 interface configuration on Leaf2:
 
-```
+```srl
 set / interface ethernet-1/10 description To-Client3
 set / interface ethernet-1/10 subinterface 0 type bridged
 ```
@@ -469,13 +470,13 @@ set / interface ethernet-1/10 subinterface 0 type bridged
 IP addresses on the client side are pre-configured (on interface eth1) during deployment. This can be verified by logging in to the Client shell and running `ip a`.
 
 To login to Client1, use:
-```
+```bash
 docker exec -it clab-srl-evpn-client1 sh
 ```
 
 Output on Client1:
 
-```
+```bash
 / # ip a
 <--truncated-->
 20: eth1@if19: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
@@ -496,14 +497,14 @@ On each Leaf, a VXLAN tunnel interface should be created with a unique VNI.
 
 Configuring VXLAN on Leaf1:
 
-```
+```srl
 set / tunnel-interface vxlan13 vxlan-interface 100 type bridged
 set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
 ```
 
 Configuring VXLAN on Leaf2:
 
-```
+```srl
 set / tunnel-interface vxlan13 vxlan-interface 100 type bridged
 set / tunnel-interface vxlan13 vxlan-interface 100 ingress vni 100
 ```
@@ -524,7 +525,7 @@ RT is used as an identifier (or condition) to import the route on the far end de
 
 EVPN-VXLAN configuration on Leaf1:
 
-```
+```srl
 set / network-instance mac-vrf-1 type mac-vrf
 set / network-instance mac-vrf-1 interface ethernet-1/10.0
 set / network-instance mac-vrf-1 vxlan-interface vxlan13.100
@@ -538,7 +539,7 @@ set / network-instance mac-vrf-1 protocols bgp-vpn bgp-instance 1 route-target i
 
 EVPN-VXLAN configuration on Leaf2:
 
-```
+```srl
 set / network-instance mac-vrf-1 type mac-vrf
 set / network-instance mac-vrf-1 interface ethernet-1/10.0
 set / network-instance mac-vrf-1 vxlan-interface vxlan13.100
@@ -556,12 +557,13 @@ EVPN will advertise Route Type 3 Inclusive Multicast Ethernet Tag (IMET) to disc
 
 This route advertisement can be seen in the BGP show output using the below command.
 
-```
+```srl
 show network-instance default protocols bgp routes evpn route-type summary
 ```
 
 Output on Leaf1:
-```
+
+```srl
 A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Show report for the BGP route table of network-instance "default"
@@ -594,13 +596,14 @@ Type 3 Inclusive Multicast Ethernet Tag Routes
 Verify if Client 3 is able to ping Client 1
 
 Login to Client3 using:
-```
+
+```bash
 sudo docker exec -it clab-srl-evpn-client3 sh
 ```
 
 Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
 
-```
+```bash
 # docker exec -it clab-srl-evpn-client3 sh
 / # ip a
 26: eth1@if25: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
@@ -616,13 +619,13 @@ The MAC address of Client3 eth1 interface is aa:c1:ab:67:32:61. This could be di
 
 Ping Client1 IP from Client3:
 
-```
+```bash
 ping -c 1 172.16.10.50
 ```
 
 Output on Client1:
 
-```
+```bash
 / # ping -c 1 172.16.10.50
 PING 172.16.10.50 (172.16.10.50): 56 data bytes
 64 bytes from 172.16.10.50: seq=0 ttl=64 time=0.886 ms
@@ -644,13 +647,13 @@ Now let's verify the MAC-IP advertisement using EVPN Route Type 2.
 
 Run the below command on Leaf1 to see this route advertisement. Verify if the MAC address in the table below is the same MAC address we noted above for Client3.
 
-```
+```srl
 show network-instance default protocols bgp routes evpn route-type summary
 ```
 
 Output on Leaf1:
 
-```
+```srl
 A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Show report for the BGP route table of network-instance "default"
@@ -678,7 +681,7 @@ At this time, both Leaf nodes have learned the remote Client MAC address.
 
 Verify the MAC Address table on the Leaf using the below command.
 
-```
+```srl
 show network-instance mac-vrf-1 bridge-table mac-table all
 ```
 
@@ -691,7 +694,7 @@ Client3 MAC address was learned over the VXLAN tunnel. The ICMP ping packet will
 On Leaf2, the VXLAN encapsulation will be removed and the packet will be forwarded to Client3.
 
 
-```
+```srl
 A:leaf1# show network-instance mac-vrf-1 bridge-table mac-table all
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Mac-table of network instance mac-vrf-1
@@ -712,7 +715,7 @@ Run the below command on Spine while a ping test is in progress between Client1 
 
 The output shows VXLAN encapsulated ICMP packets being sent between the 2 clients.
 
-```
+```srl
 tools system traffic-monitor verbose protocol udp destination-port 4789
 ```
 
@@ -738,7 +741,7 @@ Client2 & 4 are Layer 3 clients with IPs in different subnets.
 
 Client Layer 3 interface configuration on Leaf1:
 
-```
+```srl
 set / interface ethernet-1/11 description To-Client2
 set / interface ethernet-1/11 admin-state enable
 set / interface ethernet-1/11 subinterface 0 ipv4 admin-state enable
@@ -749,7 +752,7 @@ set / interface ethernet-1/11 subinterface 0 ipv6 address 10:80:1::2/64
 
 Client Layer 3 interface configuration on Leaf2:
 
-```
+```srl
 set / interface ethernet-1/11 description To-Client4
 set / interface ethernet-1/11 admin-state enable
 set / interface ethernet-1/11 subinterface 0 ipv4 admin-state enable
@@ -766,14 +769,14 @@ We will create a Layer 3 VXLAN tunnel between Leaf1 and Leaf2 with a unique VNI.
 
 Configuring VXLAN on Leaf1:
 
-```
+```srl
 set / tunnel-interface vxlan24 vxlan-interface 200 type routed
 set / tunnel-interface vxlan24 vxlan-interface 200 ingress vni 200
 ```
 
 Configuring VXLAN on Leaf2:
 
-```
+```srl
 set / tunnel-interface vxlan24 vxlan-interface 200 type routed
 set / tunnel-interface vxlan24 vxlan-interface 200 ingress vni 200
 ```
@@ -788,7 +791,7 @@ RD & RT will be separate from the Layer2 instance.
 
 EVPN-VXLAN configuration on Leaf1:
 
-```
+```srl
 set / network-instance ip-vrf-1 type ip-vrf
 set / network-instance ip-vrf-1 admin-state enable
 set / network-instance ip-vrf-1 interface ethernet-1/11.0
@@ -803,7 +806,7 @@ set / network-instance ip-vrf-1 protocols bgp-vpn bgp-instance 1 route-target im
 
 EVPN-VXLAN configuration on Leaf2:
 
-```
+```srl
 set / network-instance ip-vrf-1 type ip-vrf
 set / network-instance ip-vrf-1 admin-state enable
 set / network-instance ip-vrf-1 interface ethernet-1/11.0
@@ -822,13 +825,13 @@ When Layer 3 EVPN is enabled, the Leaf nodes will start advertising the client f
 
 This can verified using the below command.
 
-```
+```srl
 show network-instance default protocols bgp routes evpn route-type summary
 ```
 
 Output on Leaf1:
 
-```
+```srl
 A:leaf1# show network-instance default protocols bgp routes evpn route-type summary
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Show report for the BGP route table of network-instance "default"
@@ -852,13 +855,13 @@ The remote routes will also be installed on the Leaf's route table.
 
 Verify the VRF route table on Leaf1 using the below command:
 
-```
+```srl
 show network-instance ip-vrf-1 route-table ipv4-unicast summary
 ```
 
 Output on Leaf1:
 
-```
+```srl
 A:leaf1# show network-instance ip-vrf-1 route-table ipv4-unicast summary
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 IPv4 unicast route table of network instance ip-vrf-1
@@ -885,7 +888,7 @@ Login to client2 using `sudo docker exec -it clab-srl-evpn-client2 sh`.
 
 Ping Client4 IP from Client2:
 
-```
+```bash
 / # ping -c 1 10.90.1.1
 PING 10.90.1.1 (10.90.1.1): 56 data bytes
 64 bytes from 10.90.1.1: seq=0 ttl=253 time=2.208 ms
@@ -899,7 +902,7 @@ Let's understand how this ping worked.
 
 On Client2, there is a static route defined for destination 10.90.1.0/24 with Leaf1 as next-hop. This can be verified using `ip r` command on the Client.
 
-```
+```bash
 / # ip r
 default via 172.20.20.1 dev eth0
 10.80.1.0/24 dev eth1 scope link  src 10.80.1.1
@@ -927,7 +930,7 @@ The IP address on the IRB will act as a gateway for Layer 2 devices.
 
 IRB configuration on Leaf1:
 
-```
+```srl
 set / interface irb1 admin-state enable
 set / interface irb1 subinterface 100 ipv4 admin-state enable
 set / interface irb1 subinterface 100 ipv4 address 172.16.10.254/24
@@ -936,7 +939,7 @@ set / interface irb1 subinterface 100 ipv4 arp evpn advertise dynamic
 
 IRB configuration on Leaf2:
 
-```
+```srl
 set / interface irb1 admin-state enable
 set / interface irb1 subinterface 100 ipv4 admin-state enable
 set / interface irb1 subinterface 100 ipv4 address 172.16.10.253/24
@@ -949,14 +952,14 @@ The same IRB interface is now attached to both network instances.
 
 On Leaf1:
 
-```
+```srl
 set / network-instance mac-vrf-1 interface irb1.100
 set / network-instance ip-vrf-1 interface irb1.100
 ```
 
 On Leaf2:
 
-```
+```srl
 set / network-instance mac-vrf-1 interface irb1.100
 set / network-instance ip-vrf-1 interface irb1.100
 ```
@@ -967,7 +970,7 @@ Login to Client 1 using `sudo docker exec –it clab-srl-evpn-client1 sh`.
 
 Ping Client4 IP from Client1:
 
-```
+```bash
 / # ping 10.90.1.1
 PING 10.90.1.1 (10.90.1.1): 56 data bytes
 64 bytes from 10.90.1.1: seq=1 ttl=63 time=755.807 ms
