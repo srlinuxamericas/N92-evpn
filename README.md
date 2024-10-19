@@ -45,7 +45,7 @@ All 4 clients will be running [Alpine Linux](https://alpinelinux.org/)
 
 ## Deploying the lab
 
-Login to the VM using the credentials on your sheet.
+Login to the VM using the credentials on your card.
 
 This Git repo is already cloned to your VM.
 
@@ -96,7 +96,7 @@ Find the nodename or IP address of the device from the above output and then use
 
 Username: `admin`
 
-Password: Refer to the provided sheet
+Password: Refer to the provided card
 
 ```
 ssh admin@clab-srl-evpn-leaf1
