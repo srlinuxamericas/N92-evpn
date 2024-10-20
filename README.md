@@ -148,7 +148,7 @@ show interface
 
 ### IPv6 Link Addressing
 
-![image](images/lab-ipv4.jpg)
+![image](images/lab-ipv6.jpg)
 
 ### Verify reachability between devices
 
