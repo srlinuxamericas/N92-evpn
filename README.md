@@ -14,6 +14,17 @@ Shortcut links to major sections in this README:
 | [Layer 2 EPVN](#configure-l2-evpn-vxlan) | [Layer 3 EVPN](#configure-layer-3-evpn-vxlan) |
 | [CLI Quick Reference](#sr-linux-configuration-mode) | [Bonus](#bonus---interconnecting-layer-2-and-layer-3-using-irb) |
 
+---
+<div align=center>
+<a href="https://codespaces.new/srlinuxamericas/N92-evpn?quickstart=1">
+<img src="https://gitlab.com/rdodin/pics/-/wikis/uploads/d78a6f9f6869b3ac3c286928dd52fa08/run_in_codespaces-v1.svg?sanitize=true" style="width:50%"/></a>
+
+**[Run](https://codespaces.new/srlinuxamericas/N92-evpn?quickstart=1) this lab in GitHub Codespaces for free**.  
+[Learn more](https://containerlab.dev/manual/codespaces/) about Containerlab for Codespaces.
+
+</div>
+
+---
 
 ## Lab Environment
 
