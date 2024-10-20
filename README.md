@@ -180,7 +180,7 @@ To commit the configuration in SR Linux, use:
 commit stay
 ```
 
-Here's a reference table for some commonly used commands.
+Here's a reference table with some commonly used commands.
 
 | Action | Command |
 | --- | --- |
