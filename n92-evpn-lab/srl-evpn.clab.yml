@@ -31,11 +31,13 @@ topology:
       kind: linux
       mgmt-ipv4: 172.20.20.10
       mgmt-ipv6: 2001:172:20:20::10
-      binds:
-        - ./configs/hosts/client1/interfaces:/etc/network/interfaces
-        - ./configs/hosts/client1/staticroute:/etc/conf.d/staticroute        
       exec:
-        - /root/restart-services.sh
+        - ip address add 172.16.10.50/24 dev eth1
+        - ip -6 address add 172:16:10::50/64 dev eth1
+        - ip route add 10.90.1.0/24 via 172.16.10.254
+        - ip route add 10.80.1.0/24 via 172.16.10.254
+        - ip -6 route add 10:90:1::/64 via 172:16:10::254
+        - ip -6 route add 10:80:1::/64 via 172:16:10::254
     client2:
       kind: linux
       mgmt-ipv4: 172.20.20.11
@@ -45,6 +47,8 @@ topology:
         - ./configs/hosts/client2/staticroute:/etc/conf.d/staticroute
       exec:
         - /root/restart-services.sh
+        - ip route add 172.16.10.0/24 via 10.80.1.2
+        - ip -6 route add 10:90:1::/64 via 10:80:1::2
     client3:
       kind: linux
       mgmt-ipv4: 172.20.20.12
@@ -54,6 +58,10 @@ topology:
         - ./configs/hosts/client3/staticroute:/etc/conf.d/staticroute        
       exec:
         - /root/restart-services.sh
+        - ip route add 10.80.1.0/24 via 172.16.10.253
+        - ip route add 10.90.1.0/24 via 172.16.10.253
+        - ip -6 route add 10:90:1::/64 via 172:16:10::253
+        - ip -6 route add 10:80:1::/64 via 172:16:10::253
     client4:
       kind: linux
       mgmt-ipv4: 172.20.20.13
@@ -63,6 +71,8 @@ topology:
         - ./configs/hosts/client4/staticroute:/etc/conf.d/staticroute
       exec:
         - /root/restart-services.sh
+        - ip route add 172.16.10.0/24 via 10.90.1.2
+        - ip -6 route add 10:90:1::/64 via 10:90:1::2
   links:
       # spine-leaf links
     - endpoints: ["leaf1:e1-1", "spine:e1-1"]
