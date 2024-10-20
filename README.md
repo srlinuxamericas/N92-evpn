@@ -14,6 +14,16 @@ Shortcut links to major sections in this README:
 | [Layer 2 EPVN](#configure-l2-evpn-vxlan) | [Layer 3 EVPN](#configure-layer-3-evpn-vxlan) |
 | [CLI Quick Reference](#sr-linux-configuration-mode) | [Bonus](#bonus---interconnecting-layer-2-and-layer-3-using-irb) |
 
+## Lab Environment
+
+A Nokia team member will provide you with a card that contains:
+- your VM hostname
+- SSH credentials to the VM instance
+- URL of this repo
+
+> <p style="color:red">!!! Make sure to backup any code, config, ... <u> offline (e.g on your laptop)</u>. 
+> The VM instances will be destroyed once the Workshop is concluded.</p>
+
 ---
 <div align=center>
 <a href="https://codespaces.new/srlinuxamericas/N92-evpn?quickstart=1">
@@ -25,16 +35,6 @@ Shortcut links to major sections in this README:
 </div>
 
 ---
-
-## Lab Environment
-
-A Nokia team member will provide you with a card that contains:
-- your VM hostname
-- SSH credentials to the VM instance
-- URL of this repo
-
-> <p style="color:red">!!! Make sure to backup any code, config, ... <u> offline (e.g on your laptop)</u>. 
-> The VM instances will be destroyed once the Workshop is concluded.</p>
 
 ## Workshop
 The objective of the hands on section of this workshop is the following:
