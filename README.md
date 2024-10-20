@@ -196,6 +196,7 @@ Here's a reference table with some commonly used commands.
 | View configuration in another mode & context | `info {flat} from state /interface ethernet-1/1` |
 | Output modifiers | `<command> \| as {table\|json\|yaml}` |
 | Access Linux shell | `bash` |
+| Find a command | `tree flat detail \| grep <keyword>` |
 
 
 ## Configure BGP Underlay
