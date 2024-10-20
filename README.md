@@ -650,7 +650,7 @@ Ping is successful. We have now established a Layer2 EVPN connection between Cli
 
 Let's understand how this ping worked.
 
-When we initiated the ping from Client3, with the first ping packet an ARP was sent for the destination IP of Client1. Unlike a traditional VPLS, the ARP is not flooded to all devices but only sent to the PE devices discovered using EVPN Route Type 3 (RT3).
+When we initiated the ping from Client3, with the first ping packet an ARP was sent by Client 3 for the destination IP of Client1. Unlike a traditional VPLS, the ARP is not flooded to all devices but only sent to the PE devices discovered using EVPN Route Type 3 (RT3).
 
 At the same time, Leaf2 connected to Client3 learns the MAC of Client3 from the source MAC address field of the ICMP ping packet. Leaf2 sends an EVPN MAC-IP Route Type 2 advertisement to Leaf1 advertising Client3 MAC with Leaf2 as next-hop.
 
@@ -684,7 +684,7 @@ Type 2 MAC-IP Advertisement Routes
 +--------+------------------+------------+-------------------+------------------+------------------+------------------+------------------+--------------------------------+------------------+
 ```
 
-When Leaf1 receives the ARP from Leaf2 for Client1 IP, Leaf1 will broadcast that ARP to it's connected Client. Client1 responds to the ARP.
+When Leaf1 receives the ARP from Leaf2 for Client1 IP, Leaf1 will broadcast that ARP to it's connected Client. Client1 responds to the ARP which is encapsulated by Leaf1 and sent to Leaf2.
 
 Now Leaf1 will send EVPN Route Type2 to Leaf2 advertising Client1 MAC address with Leaf1 system IP as next-hop. Verify this using the same command above on Leaf2.
 
