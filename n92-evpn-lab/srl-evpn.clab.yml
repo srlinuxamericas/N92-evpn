@@ -58,8 +58,6 @@ topology:
         - ./configs/hosts/client3/staticroute:/etc/conf.d/staticroute        
       exec:
         - /root/restart-services.sh
-        - ip route add 10.80.1.0/24 via 172.16.10.253
-        - ip route add 10.90.1.0/24 via 172.16.10.253
         - ip -6 route add 10:90:1::/64 via 172:16:10::253
         - ip -6 route add 10:80:1::/64 via 172:16:10::253
     client4:
