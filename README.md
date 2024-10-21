@@ -109,17 +109,17 @@ INFO[0027] Executed command "/root/restart-services.sh" on the node "client1". s
 INFO[0027] Executed command "/root/restart-services.sh" on the node "client2". stdout:
 INFO[0027] Adding containerlab host entries to /etc/hosts file
 INFO[0027] Adding ssh config for containerlab nodes     
-+---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
-| # |         Name          | Container ID |            Image             |     Kind      |  State  |  IPv4 Address   |     IPv6 Address      |
-+---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
-| 1 | clab-srl-evpn-client1 | 09b0a56acb20 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.10/24 | 2001:172:20:20::10/64 |
-| 2 | clab-srl-evpn-client2 | 08184527ce7b | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.11/24 | 2001:172:20:20::11/64 |
-| 3 | clab-srl-evpn-client3 | b2b82fa2a465 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.12/24 | 2001:172:20:20::12/64 |
-| 4 | clab-srl-evpn-client4 | 3b80e9aa5855 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.13/24 | 2001:172:20:20::13/64 |
-| 5 | clab-srl-evpn-leaf1   | 4dc78c197438 | ghcr.io/nokia/srlinux:24.7.2 | nokia_srlinux | running | 172.20.20.2/24  | 2001:172:20:20::2/64  |
-| 6 | clab-srl-evpn-leaf2   | dbd457a1d5ad | ghcr.io/nokia/srlinux:24.7.2 | nokia_srlinux | running | 172.20.20.4/24  | 2001:172:20:20::4/64  |
-| 7 | clab-srl-evpn-spine   | ac7a4f671623 | ghcr.io/nokia/srlinux:24.7.2 | nokia_srlinux | running | 172.20.20.3/24  | 2001:172:20:20::3/64  |
-+---+-----------------------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
++---+---------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
+| # |  Name   | Container ID |            Image             |     Kind      |  State  |  IPv4 Address   |     IPv6 Address      |
++---+---------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
+| 1 | client1 | 8ae427b192c6 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.10/24 | 2001:172:20:20::10/64 |
+| 2 | client2 | bbfe0ab03441 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.11/24 | 2001:172:20:20::11/64 |
+| 3 | client3 | 76f0262de571 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.12/24 | 2001:172:20:20::12/64 |
+| 4 | client4 | 8e45ed7389c1 | ghcr.io/srl-labs/alpine      | linux         | running | 172.20.20.13/24 | 2001:172:20:20::13/64 |
+| 5 | leaf1   | 58d90a824ebb | ghcr.io/nokia/srlinux:24.7.2 | nokia_srlinux | running | 172.20.20.2/24  | 2001:172:20:20::2/64  |
+| 6 | leaf2   | 4b0201795b9b | ghcr.io/nokia/srlinux:24.7.2 | nokia_srlinux | running | 172.20.20.4/24  | 2001:172:20:20::4/64  |
+| 7 | spine   | 93c20f40ef66 | ghcr.io/nokia/srlinux:24.7.2 | nokia_srlinux | running | 172.20.20.3/24  | 2001:172:20:20::3/64  |
++---+---------+--------------+------------------------------+---------------+---------+-----------------+-----------------------+
 ```
 
 To display all deployed labs on your VM at any time, use:
@@ -137,13 +137,13 @@ Username: `admin`
 Password: Refer to the provided card
 
 ```bash
-ssh admin@clab-srl-evpn-leaf1
+ssh admin@leaf1
 ```
 
 To login to the client, identify the client hostname using the `sudo clab inspect --all` command above and then:
 
 ```bash
-sudo docker exec –it clab-srl-evpn-client3 sh
+sudo docker exec –it client3 sh
 ```
 
 ## Physical link connectivity
@@ -510,7 +510,7 @@ IP addresses on the client side are pre-configured (on interface eth1) during de
 
 To login to Client1, use:
 ```bash
-docker exec -it clab-srl-evpn-client1 sh
+docker exec -it client1 sh
 ```
 
 Output on Client1:
@@ -637,13 +637,13 @@ Verify if Client 3 is able to ping Client 1
 Login to Client3 using:
 
 ```bash
-sudo docker exec -it clab-srl-evpn-client3 sh
+sudo docker exec -it client3 sh
 ```
 
 Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
 
 ```bash
-# docker exec -it clab-srl-evpn-client3 sh
+# docker exec -it client3 sh
 / # ip a
 26: eth1@if25: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
     link/ether aa:c1:ab:67:32:61 brd ff:ff:ff:ff:ff:ff
@@ -923,7 +923,7 @@ IPv4 unicast route table of network instance ip-vrf-1
 
 ### Ping between Client 2 & 4
 
-Login to client2 using `sudo docker exec -it clab-srl-evpn-client2 sh`.
+Login to client2 using `sudo docker exec -it client2 sh`.
 
 Ping Client4 IP from Client2:
 
@@ -1005,7 +1005,7 @@ set / network-instance ip-vrf-1 interface irb1.100
 
 ### Ping between Client 1 & 4
 
-Login to Client 1 using `sudo docker exec –it clab-srl-evpn-client1 sh`.
+Login to Client 1 using `sudo docker exec –it client1 sh`.
 
 Ping Client4 IP from Client1:
 
