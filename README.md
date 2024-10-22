@@ -13,7 +13,7 @@ Shortcut links to major sections in this README:
 | [BGP Underay](#configure-bgp-underlay) | [BGP Overlay](#configure-bgp-for-overlay) |
 | [Layer 2 EPVN](#configure-l2-evpn-vxlan) | [Layer 3 EVPN](#configure-layer-3-evpn-vxlan) |
 | [CLI Quick Reference](#sr-linux-configuration-mode) | [Bonus](#bonus---interconnecting-layer-2-and-layer-3-using-irb) |
-| [Spine loopback](#re-configure-spine3-system-loopback) | |
+| [Spine loopback](#re-configure-spine-system-loopback) | |
 
 ## Lab Environment
 
