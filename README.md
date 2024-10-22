@@ -242,7 +242,7 @@ We will use the IPv4 and IPv6 interface address to form BGP sessions between Lea
 
 We will export the system loopback IP over BGP to other nodes. This is required to create our overlay sessions in the next step.
 
-The export policies are already created as part of the startup config. In this step, we will apply them to BGP.
+The export policies are already created as part of the startup config. The routing policy config can be seen using the `info /routing-policy` command. In this step, we will apply them to BGP.
 
 ![image](images/bgp-underlay.jpg)
 
