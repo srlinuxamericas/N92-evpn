@@ -246,6 +246,15 @@ The export policies are already created as part of the startup config. The routi
 
 ![image](images/bgp-underlay.jpg)
 
+### Re-configure Spine3 system loopback
+
+```srl
+delete interface system0 subinterface 0 ipv4 address 1.1.1.1/32
+delete interface system0 subinterface 0 ipv6 address 2001::1/128
+set / interface system0 subinterface 0 ipv4 address 3.3.3.3/32
+set / interface system0 subinterface 0 ipv6 address 2001::3/128
+```
+
 ### BGP Underlay Configuration
 
 BGP underlay configuration on Leaf1:
