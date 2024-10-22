@@ -13,6 +13,7 @@ Shortcut links to major sections in this README:
 | [BGP Underay](#configure-bgp-underlay) | [BGP Overlay](#configure-bgp-for-overlay) |
 | [Layer 2 EPVN](#configure-l2-evpn-vxlan) | [Layer 3 EVPN](#configure-layer-3-evpn-vxlan) |
 | [CLI Quick Reference](#sr-linux-configuration-mode) | [Bonus](#bonus---interconnecting-layer-2-and-layer-3-using-irb) |
+| [Spine loopback](#re-configure-spine3-system-loopback) | |
 
 ## Lab Environment
 
@@ -246,7 +247,7 @@ The export policies are already created as part of the startup config. The routi
 
 ![image](images/bgp-underlay.jpg)
 
-### Re-configure Spine3 system loopback
+### Re-configure Spine system loopback
 
 ```srl
 delete interface system0 subinterface 0 ipv4 address 1.1.1.1/32
