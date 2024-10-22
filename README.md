@@ -254,7 +254,7 @@ delete interface system0 subinterface 0 ipv4 address 1.1.1.1/32
 delete interface system0 subinterface 0 ipv6 address 2001::1/128
 set / interface system0 subinterface 0 ipv4 address 3.3.3.3/32
 set / interface system0 subinterface 0 ipv6 address 2001::3/128
-set / network-instance default interface system 0.0   
+set / network-instance default interface system0.0   
 ```
 
 ### BGP Underlay Configuration
