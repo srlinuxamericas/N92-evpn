@@ -510,7 +510,7 @@ IP addresses on the client side are pre-configured (on interface eth1) during de
 
 To login to Client1, use:
 ```bash
-docker exec -it client1 sh
+sudo docker exec -it client1 sh
 ```
 
 Output on Client1:
@@ -643,7 +643,7 @@ sudo docker exec -it client3 sh
 Run `ip a` and note down the MAC address of eth1 interface (facing Leaf2).
 
 ```bash
-# docker exec -it client3 sh
+# sudo docker exec -it client3 sh
 / # ip a
 26: eth1@if25: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 9500 qdisc noqueue state UP
     link/ether aa:c1:ab:67:32:61 brd ff:ff:ff:ff:ff:ff
