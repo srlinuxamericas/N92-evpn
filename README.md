@@ -13,7 +13,6 @@ Shortcut links to major sections in this README:
 | [BGP Underay](#configure-bgp-underlay) | [BGP Overlay](#configure-bgp-for-overlay) |
 | [Layer 2 EPVN](#configure-l2-evpn-vxlan) | [Layer 3 EVPN](#configure-layer-3-evpn-vxlan) |
 | [CLI Quick Reference](#sr-linux-configuration-mode) | [Bonus](#bonus---interconnecting-layer-2-and-layer-3-using-irb) |
-| [Spine loopback](#re-configure-spine-system-loopback) | |
 
 ## Lab Environment
 
@@ -246,16 +245,6 @@ We will export the system loopback IP over BGP to other nodes. This is required 
 The export policies are already created as part of the startup config. The routing policy config can be seen using the `info /routing-policy` command. In this step, we will apply them to BGP.
 
 ![image](images/bgp-underlay.jpg)
-
-### Re-configure Spine system loopback
-
-```srl
-delete interface system0 subinterface 0 ipv4 address 1.1.1.1/32
-delete interface system0 subinterface 0 ipv6 address 2001::1/128
-set / interface system0 subinterface 0 ipv4 address 3.3.3.3/32
-set / interface system0 subinterface 0 ipv6 address 2001::3/128
-set / network-instance default interface system0.0   
-```
 
 ### BGP Underlay Configuration
 
