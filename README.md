@@ -1,9 +1,9 @@
 # Welcome to the EVPN Workshop at NANOG 92
 This README is your starting point into the hands on section.
 
-Pre-requisite: A laptop with SSH client
+Please contact [**Reda Laichi**](https://www.linkedin.com/in/reda-l-5b28292) or [**Saju Salahudeen**](www.linkedin.com/in/saju-salahudeen) if you have any questions.
 
-If you need help, please raise your hand and a Nokia team member will be happy to assist.
+Pre-requisite: A laptop with SSH client
 
 Shortcut links to major sections in this README:
 
