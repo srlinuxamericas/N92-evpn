@@ -1027,7 +1027,7 @@ By now, you should have an understanding of how this ping worked. If you have qu
 
 ## Explore this lab with everything pre-configured
 
-If you would like to explore all of the above without doing any manual configurations, we got your covered !
+If you would like to explore all of the above without doing any manual configurations, we got you covered !
 
 Go to [Complete startup config](n92-evpn-lab/configs/fabric/startup-complete) to see the full configuration for each device.
 
