@@ -56,11 +56,7 @@ All 4 clients will be running [Alpine Linux](https://alpinelinux.org/)
 
 ## Deploying the lab
 
-Login to the VM using the credentials on your card.
-
-This Git repo is already cloned to your VM.
-
-But in case you need it, use the below command to clone this repo to your VM.
+Use the below command to clone this repo to your VM.
 
 ```bash
 sudo git clone https://github.com/srlinuxamericas/N92-evpn.git
@@ -69,24 +65,24 @@ sudo git clone https://github.com/srlinuxamericas/N92-evpn.git
 Verify that the git repo files are available on your VM.
 
 ```bash
-ls -lrt workshop/n92-evpn-lab/
+ls -lrt N92-evpn/n92-evpn-lab/
 ```
 
 To deploy the lab, run the following:
 
 ```bash
-cd workshop/n92-evpn-lab
+cd N92-evpn/n92-evpn-lab
 sudo clab deploy -t srl-evpn.clab.yml
 ```
 
 [Containerlab](https://containerlab.dev/) will deploy the lab and display a table with the list of nodes and their IPs.
 
 ```bash
-nanoguser@1:~/workshop/n92-evpn-lab$ sudo clab deploy -t srl-evpn.clab.yml
+user@1:~/N92-evpn/n92-evpn-lab$ sudo clab deploy -t srl-evpn.clab.yml
 INFO[0000] Containerlab v0.58.0 started                 
 INFO[0000] Parsing & checking topology file: srl-evpn.clab.yml
 INFO[0000] Creating docker network: Name="srl-evpn-lab-mgmt", IPv4Subnet="172.20.20.0/24", IPv6Subnet="2001:172:20:20::/64", MTU=0
-INFO[0000] Creating lab directory: /home/nanoguser/workshop/n92-evpn-lab/clab-srl-evpn
+INFO[0000] Creating lab directory: /home/user/N92-evpn/n92-evpn-lab/clab-srl-evpn
 INFO[0000] Creating container: "client2"                
 INFO[0000] Creating container: "client4"                
 INFO[0000] Creating container: "leaf2"                  
