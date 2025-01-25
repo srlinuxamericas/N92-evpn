@@ -167,7 +167,7 @@ show interface
 
 ### IPv4 Link Addressing
 
-![image](images/lab-ipv4.jpg)
+![image](images/lab-ipv4-2.jpg)
 
 ### IPv6 Link Addressing
 
