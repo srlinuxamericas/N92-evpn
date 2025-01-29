@@ -1,7 +1,5 @@
 # Welcome to the EVPN Workshop at NANOG 92
 
-EDA Git Repo - [EDA Repo](https://github.com/redaGit/J29)
-
 This README is your starting point into the hands on section.
 
 Please contact [**Reda Laichi**](https://www.linkedin.com/in/reda-l-5b28292) or [**Saju Salahudeen**](https://www.linkedin.com/in/saju-salahudeen) if you have any questions.
