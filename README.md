@@ -57,6 +57,12 @@ All 4 clients will be running [Alpine Linux](https://alpinelinux.org/)
 
 ## Deploying the lab
 
+Install Containerlab on your VM.
+
+```bash
+curl -sL https://containerlab.dev/setup | sudo -E bash -s "all"
+```
+
 Use the below command to clone this repo to your VM.
 
 ```bash
