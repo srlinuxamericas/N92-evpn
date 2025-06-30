@@ -11,7 +11,7 @@ topology:
     kind: nokia_srlinux
   kinds:
     nokia_srlinux:
-      type: ixrd4
+      type: ixrd2l
       image: ghcr.io/nokia/srlinux:25.3.2
       binds:
         - configs/custom.py:/etc/opt/srlinux/cli/plugins/custom.py
