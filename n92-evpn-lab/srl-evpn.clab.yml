@@ -11,8 +11,8 @@ topology:
     kind: nokia_srlinux
   kinds:
     nokia_srlinux:
-      type: ixrd2l
-      image: ghcr.io/nokia/srlinux:24.7.2
+      type: ixrd4
+      image: ghcr.io/nokia/srlinux:25.3.2
     linux:
       image: ghcr.io/srl-labs/alpine
   nodes:
@@ -25,6 +25,7 @@ topology:
       mgmt-ipv4: 172.20.20.4
       mgmt-ipv6: 2001:172:20:20::4
     spine:
+      type: ixrh4
       startup-config: configs/fabric/startup/spine-startup.cfg
       mgmt-ipv4: 172.20.20.3
       mgmt-ipv6: 2001:172:20:20::3
