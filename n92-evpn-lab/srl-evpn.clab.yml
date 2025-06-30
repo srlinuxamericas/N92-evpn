@@ -13,6 +13,8 @@ topology:
     nokia_srlinux:
       type: ixrd4
       image: ghcr.io/nokia/srlinux:25.3.2
+      binds:
+        - configs/custom.py:/etc/opt/srlinux/cli/plugins/custom.py
     linux:
       image: ghcr.io/srl-labs/alpine
   nodes:
