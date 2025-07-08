@@ -1038,22 +1038,29 @@ set / network-instance ip-vrf-1 interface irb1.100
 
 ### Ping between Client 1 & 4
 
-Login to Client 1 using `sudo docker exec –it client1 sh`.
+Login to Client 1 using:
+
+```bash
+sudo docker exec -it client1 sh
+```
 
 Ping Client4 IP from Client1:
 
 ```bash
-/ # ping 10.90.1.1
-PING 10.90.1.1 (10.90.1.1): 56 data bytes
-64 bytes from 10.90.1.1: seq=1 ttl=63 time=755.807 ms
-64 bytes from 10.90.1.1: seq=2 ttl=63 time=0.905 ms
-64 bytes from 10.90.1.1: seq=3 ttl=63 time=0.707 ms
-64 bytes from 10.90.1.1: seq=4 ttl=63 time=0.871 ms
-64 bytes from 10.90.1.1: seq=5 ttl=63 time=0.783 ms
-^C
+ping -c 3 10.90.1.1
+```
+
+Expected output:
+
+```bash
+PING 10.90.1.1 (10.90.1.1) 56(84) bytes of data.
+64 bytes from 10.90.1.1: icmp_seq=1 ttl=63 time=592 ms
+64 bytes from 10.90.1.1: icmp_seq=2 ttl=63 time=0.594 ms
+64 bytes from 10.90.1.1: icmp_seq=3 ttl=63 time=0.578 ms
+
 --- 10.90.1.1 ping statistics ---
-6 packets transmitted, 5 packets received, 16% packet loss
-round-trip min/avg/max = 0.707/151.814/755.807 ms
+3 packets transmitted, 3 received, 0% packet loss, time 2051ms
+rtt min/avg/max/mdev = 0.578/197.560/591.508/278.563 ms
 ```
 
 By now, you should have an understanding of how this ping worked. If you have questions, please raise your hand and a Nokia team member will be happy to help.
