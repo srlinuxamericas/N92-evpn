@@ -63,6 +63,8 @@ Install Containerlab on your VM.
 curl -sL https://containerlab.dev/setup | sudo -E bash -s "all"
 ```
 
+Logout and login for the sudo privileges to take effect.
+
 Use the below command to clone this repo to your VM.
 
 ```bash
