@@ -959,7 +959,7 @@ IPv4 unicast route table of network instance ip-vrf-1
 Login to client2 using:
 
 ```bash
-sudo docker exec -it client2 sh`
+sudo docker exec -it client2 sh
 ```
 
 Ping Client4 IP from Client2:
