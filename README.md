@@ -797,7 +797,7 @@ In this command, port 4789 is standard port for VXLAN.
 
 Containerlab provides the ability to do a packet capture and re-direct the captured packets to Wireshark.
 
-Visit [Containerlab page](https://containerlab.dev/manual/wireshark/) to learn more.
+Visit [AC2 Workshop page](https://github.com/srlinuxamericas/ac2-clab/tree/main/40-packet-capture) to learn more.
 
 ## Configure Layer 3 EVPN-VXLAN
 
